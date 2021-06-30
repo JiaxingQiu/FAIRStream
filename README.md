@@ -1,2 +1,2 @@
 # MediTFDS
-For the integration of the BSI project with FAIRSCAPE's computational framework.
+For the integration of the CAMA BSI project with FAIRSCAPE's computational framework.
