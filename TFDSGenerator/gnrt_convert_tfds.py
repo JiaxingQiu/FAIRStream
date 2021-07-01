@@ -2,7 +2,7 @@
 
 def gnrt_convert_tfds(cohort_event_seq, time_unit_before, time_unit_after):
     """ Summary
-    
+
     Details
 
     Arges:
@@ -12,6 +12,5 @@ def gnrt_convert_tfds(cohort_event_seq, time_unit_before, time_unit_after):
     Raises:
 
     """
-
     dataset = []
     return dataset

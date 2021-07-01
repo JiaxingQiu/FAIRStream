@@ -1,6 +1,6 @@
 def prep_id_subset(id_pool, nsbj):
     """ Bootstrap nsbj number of subjects from id pool
-    
+
     Details
 
     Arges:
