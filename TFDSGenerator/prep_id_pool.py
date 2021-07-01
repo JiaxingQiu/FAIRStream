@@ -1,6 +1,6 @@
 def prep_id_pool(source_dict):
     """ Summary
-    
+
     Details
 
     Arges:
@@ -14,7 +14,5 @@ def prep_id_pool(source_dict):
     Raises:
 
     """
-
     id_pool = []
-
     return id_pool
