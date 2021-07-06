@@ -1,2 +1,5 @@
-# TFDStream
-For the integration of the CAMA BSI project with FAIRSCAPE's computational framework.
+# FAIRStream
+
+Integrate FAIR AI principle with medical research on Blood Stream Infection(BSI).
+
+![alt text](https://github.com/UVA-CAMA/FAIRStream/blob/main/poster.PNG)
