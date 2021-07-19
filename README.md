@@ -7,8 +7,5 @@
   * Python
   * R
   * SQL
-* Developers:
-  * Center for Advanced Medical Analytics, School of Medicine, UVA
-  * School of Data Science, UVA
 
 ![alt text](https://github.com/UVA-CAMA/FAIRStream/blob/main/resources/poster.png)
