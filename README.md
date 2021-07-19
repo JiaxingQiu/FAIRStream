@@ -8,7 +8,7 @@
   * R
   * SQL
 * Case studies: 
-  * Bloodsteam Infection(BSI) events prediction in ICU
+  * ICU Bloodsteam Infection(BSI) events prediction
   * NICU respiratory and cardiological primary outcome prediction 
   * NICU sepsis and BSI events prediction
 
