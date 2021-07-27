@@ -39,6 +39,32 @@ def make_sample_info_from_csv(csv_pool_dir, source_dict, variable_dict, nsbj=Non
     ) for file in source_dict[source].keys() if source_dict[source][file]['include']]
     df_file_dict = df_file_dict[df_file_dict['file_key'].isin(files_include)]
 
+    print(df_file_dict['file_key'].value_counts(ascending=True))
+
+    # BUG: df_file_dict at this point does not contain any entries matching file_key_base,
+    # so the following code fails because of an empty dataframe.
+
+    # VALUE COUNTS BEFORE:
+    # Brady_100_BI              26
+    # SPO2_pct_stats            27
+    # PB_BI                     27
+    # MaxCrossCorrHR_SPO2_BI    27
+    # HR_stats                  27
+    # PrimaryOutcome            27
+    # Desat_80_BI               27
+    # Demo_base                 28
+    # Name: file_key, dtype: int64
+
+    # file_key_base: Brady_100_BI
+
+    # VALUE COUNTS AFTER:
+    # SPO2_pct_stats    27
+    # PB_BI             27
+    # HR_stats          27
+    # Name: file_key, dtype: int64
+
+    # Notice that file_key_base is no longer present in the file_key column.
+
     if stratify_by is None:
         stratify_by_list = []
     else:
