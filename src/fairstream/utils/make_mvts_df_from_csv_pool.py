@@ -1,10 +1,10 @@
 from sklearn.impute import SimpleImputer
+from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
-# from sklearn.experimental import enable_iterative_imputer
 import numpy as np
 from matplotlib import pyplot as plt
 
-from utils.engineer_df import *
+from fairstream.utils.engineer_df import *
 
 plt.rcParams.update({'figure.max_open_warning': 0})
 

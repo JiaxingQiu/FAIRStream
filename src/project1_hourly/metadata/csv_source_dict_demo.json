@@ -1,0 +1,26 @@
+{
+    "cohort_1": {
+        "csv_file_1": {
+            "input": true,
+            "path": "cohort_1 csv_file_1 full path here",
+            "label": "a short description of cohort_1 csv_file_1"
+        },
+        "file_2": {
+            "input": true,
+            "path": "cohort_1 csv_file_2 full path here",
+            "label": "a short description of cohort_1 csv_file_2"
+        }
+    },
+    "cohort_2": {
+        "input": true,
+        "csv_file_1": {
+            "path": "cohort_2 csv_file_1 full path here",
+            "label": "a short description of cohort_1 csv_file_1"
+        },
+        "file_2": {
+            "input": true,
+            "path": "cohort_2 csv_file_2 full path here",
+            "label": "a short description of cohort_1 csv_file_2"
+        }
+    }
+}

@@ -21,9 +21,9 @@ Module description details
 """
 import json
 
-from workers.Goblin import Goblin
-from utils.prep_dicts import *
-from utils.create_csv_pool import create_csv_pool
+from fairstream.workers.Goblin import Goblin
+from fairstream.utils.prep_dicts import *
+from fairstream.utils.create_csv_pool import create_csv_pool
 
 
 class Querier(Goblin):

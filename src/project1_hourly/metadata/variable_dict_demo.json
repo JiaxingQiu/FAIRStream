@@ -1,0 +1,62 @@
+{
+    "__uid": {
+        "src_names": [
+            "id",
+            "subjectnbr"
+        ],
+        "label": "unique study subject id",
+        "unique_per_sbj": true
+    },
+    "__time": {
+        "src_names": [
+            "hoursincebirth"
+        ],
+        "label": "time since birth",
+        "unique_per_sbj": false,
+        "unit": "hour"
+    },
+    "__anchor": {
+        "src_names": [
+            "y"
+        ],
+        "label": "primary outcome result",
+        "unique_per_sbj": false,
+        "factor": {
+            "levels": {
+                "1": [
+                    "1",
+                    "1.0"
+                ],
+                "2": [
+                    "2",
+                    "2.0"
+                ],
+                "3": [
+                    "3",
+                    "3.0"
+                ]
+            }
+        }
+    },
+    "BI": {
+        "input": true,
+        "src_names": [
+            "burden_index"
+        ],
+        "label": "episode burden index",
+        "unique_per_sbj": false,
+        "numeric": {
+            "unit": "percentage of daily episode duration * 3600",
+            "cutoff": {
+                "quantile_min": 0.0005,
+                "quantile_max": 0.9995,
+                "value_min": 0,
+                "value_max": 100000
+            },
+            "impute_per_sbj": {
+                "forward": 0,
+                "backward": 0
+            }
+        }
+    }
+}

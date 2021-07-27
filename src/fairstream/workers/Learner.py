@@ -1,4 +1,4 @@
-from workers.Goblin import Goblin
+from fairstream.workers.Goblin import Goblin
 
 
 class Learner(Goblin):

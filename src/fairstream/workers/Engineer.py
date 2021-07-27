@@ -7,11 +7,11 @@
     Usage example:
 
 """
-from workers.Episode import Episode
-from workers.Goblin import Goblin
+from fairstream.workers.Episode import Episode
+from fairstream.workers.Goblin import Goblin
 
-from utils.make_mvts_df_from_csv_pool import *
-from utils.make_mvts_tfds_from_df import *
+from fairstream.utils.make_mvts_df_from_csv_pool import *
+from fairstream.utils.make_mvts_tfds_from_df import *
 import random
 
 

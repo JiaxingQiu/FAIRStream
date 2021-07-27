@@ -31,9 +31,11 @@ class Goblin:
 
         # set study working directory
         self.work_dir = work_dir
-        os.chdir(self.work_dir)
+        if not os.path.exists(self.work_dir):
+            os.mkdir(self.work_dir)
+        # os.chdir(self.work_dir)
         # set dictionary folder under current working direction
-        self.meta_dir = str(self.work_dir) + '/meta_data'
+        self.meta_dir = os.path.join(self.work_dir, 'metadata')
         if not os.path.exists(self.meta_dir):
             os.mkdir(self.meta_dir)
 
@@ -44,7 +46,7 @@ class Goblin:
 
     def read_csv_source_dict(self, show=False):
         try:
-            fullname = str(self.meta_dir)+'/csv_source_dict.json'
+            fullname = os.path.join(self.meta_dir, 'csv_source_dict.json')
             f = open(fullname, "r")
             self.csv_source_dict = json.loads(f.read())
             if show:
@@ -56,7 +58,7 @@ class Goblin:
 
     def read_sql_source_dict(self, show=False):
         try:
-            fullname = str(self.meta_dir)+'/sql_source_dict.json'
+            fullname = os.path.join(self.meta_dir, 'sql_source_dict.json')
             f = open(fullname, "r")
             self.sql_source_dict = json.loads(f.read())
             if show:
@@ -68,7 +70,7 @@ class Goblin:
 
     def read_variable_dict(self, show=False):
         try:
-            fullname = str(self.meta_dir)+'/variable_dict.json'
+            fullname = os.path.join(self.meta_dir, 'variable_dict.json')
             f = open(fullname, "r")
             self.variable_dict = json.loads(f.read())
             if show:

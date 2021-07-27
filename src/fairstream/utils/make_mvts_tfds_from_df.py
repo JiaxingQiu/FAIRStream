@@ -1,4 +1,4 @@
-from workers.WindowGenerator import WindowGenerator
+from fairstream.workers.WindowGenerator import WindowGenerator
 
 
 def make_mvts_tfds_from_df(mvts_df, input_vars, output_vars, input_time_len, output_time_len, time_resolution, time_lag, batch_size):

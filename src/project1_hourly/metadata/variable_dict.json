@@ -1,0 +1,336 @@
+{
+    "__uid": {
+        "src_names": [
+            "id",
+            "subjectnbr"
+        ],
+        "label": "unique study subject id",
+        "unique_per_sbj": true
+    },
+    "__time": {
+        "src_names": [
+            "hoursincebirth"
+        ],
+        "label": "time since birth",
+        "unique_per_sbj": false,
+        "unit": "hour"
+    },
+    "__anchor": {
+        "src_names": [
+            "log_burden_index"
+        ],
+        "label": "log of episode burden index",
+        "unique_per_sbj": false,
+        "numeric": {
+            "unit": "log(percentage of daily episode duration +0.0001)",
+            "cutoff": {
+                "quantile_min": 0.0005,
+                "quantile_max": 0.9995,
+                "value_min": -10000,
+                "value_max": 100000
+            },
+            "impute_per_sbj": {
+                "forward": 0,
+                "backward": 0
+            }
+        }
+    },
+    "y": {
+        "output": false,
+        "src_names": [
+            "log_BI"
+        ],
+        "label": "primary outcome result",
+        "unique_per_sbj": false,
+        "factor": {
+            "levels": {
+                "1": [
+                    "1",
+                    "1.0"
+                ],
+                "2": [
+                    "2",
+                    "2.0"
+                ],
+                "3": [
+                    "3",
+                    "3.0"
+                ]
+            }
+        }
+    },
+    "BI": {
+        "input": false,
+        "src_names": [
+            "burden_index"
+        ],
+        "label": "episode burden index",
+        "unique_per_sbj": false,
+        "numeric": {
+            "unit": "percentage of daily episode duration * 3600",
+            "cutoff": {
+                "quantile_min": 0.0005,
+                "quantile_max": 0.9995,
+                "value_min": 0,
+                "value_max": 100000
+            },
+            "impute_per_sbj": {
+                "forward": 0,
+                "backward": 0
+            }
+        }
+    },
+    "log_BI": {
+        "output": true,
+        "src_names": [
+            "log_burden_index"
+        ],
+        "label": "log of episode burden index",
+        "unique_per_sbj": false,
+        "numeric": {
+            "unit": "log(percentage of daily episode duration +0.0001)",
+            "cutoff": {
+                "quantile_min": 0.0005,
+                "quantile_max": 0.9995,
+                "value_min": -8,
+                "value_max": 0
+            },
+            "impute_per_sbj": {
+                "forward": 0,
+                "backward": 0
+            }
+        }
+    },
+    "HRMean": {
+        "input": true,
+        "src_names": [
+            "HourlyHRMean_v1"
+        ],
+        "label": "hourly mean heart rate",
+        "unique_per_sbj": false,
+        "numeric": {
+            "unit": "beats per minute",
+            "cutoff": {
+                "quantile_min": 0.0005,
+                "quantile_max": 0.9995,
+                "value_min": 0,
+                "value_max": 300
+            },
+            "impute_per_sbj": {
+                "forward": 0,
+                "backward": 0
+            }
+        }
+    },
+    "HRStd": {
+        "input": true,
+        "src_names": [
+            "HourlyHRStd_v1"
+        ],
+        "label": "hourly standard deviation of heart rate",
+        "unique_per_sbj": false,
+        "numeric": {
+            "unit": null,
+            "cutoff": {
+                "quantile_min": 0.0005,
+                "quantile_max": 0.9995,
+                "value_min": -100,
+                "value_max": 100
+            },
+            "impute_per_sbj": {
+                "forward": 0,
+                "backward": 0
+            }
+        }
+    },
+    "HRSkewness": {
+        "input": true,
+        "src_names": [
+            "HourlyHRSkewness_v1"
+        ],
+        "label": "hourly skewness of heart rate",
+        "unique_per_sbj": false,
+        "numeric": {
+            "unit": null,
+            "cutoff": {
+                "quantile_min": 0.0005,
+                "quantile_max": 0.9995,
+                "value_min": -100,
+                "value_max": 100
+            },
+            "impute_per_sbj": {
+                "forward": 0,
+                "backward": 0
+            }
+        }
+    },
+    "HRKurtosis": {
+        "input": true,
+        "src_names": [
+            "HourlyHRKurtosis_v1"
+        ],
+        "label": "hourly skewness of heart rate",
+        "unique_per_sbj": false,
+        "numeric": {
+            "unit": null,
+            "cutoff": {
+                "quantile_min": 0.0005,
+                "quantile_max": 0.9995,
+                "value_min": -100,
+                "value_max": 100
+            },
+            "impute_per_sbj": {
+                "forward": 0,
+                "backward": 0
+            }
+        }
+    },
+    "SPO2_pctMean": {
+        "input": true,
+        "src_names": [
+            "HourlySPO2_pctMean_v1"
+        ],
+        "label": "hourly mean SPO2 percentage",
+        "unique_per_sbj": false,
+        "numeric": {
+            "unit": "beats per minute",
+            "cutoff": {
+                "quantile_min": 0.0005,
+                "quantile_max": 0.9995,
+                "value_min": 0,
+                "value_max": 100
+            },
+            "impute_per_sbj": {
+                "forward": 0,
+                "backward": 0
+            }
+        }
+    },
+    "SPO2_pctStd": {
+        "input": true,
+        "src_names": [
+            "HourlySPO2_pctStd_v1"
+        ],
+        "label": "hourly standard deviation of SPO2 percentage",
+        "unique_per_sbj": false,
+        "numeric": {
+            "unit": null,
+            "cutoff": {
+                "quantile_min": 0.0005,
+                "quantile_max": 0.9995,
+                "value_min": -100,
+                "value_max": 100
+            },
+            "impute_per_sbj": {
+                "forward": 0,
+                "backward": 0
+            }
+        }
+    },
+    "SPO2_pctSkewness": {
+        "input": true,
+        "src_names": [
+            "HourlySPO2_pctSkewness_v1"
+        ],
+        "label": "hourly skewness of SPO2 percentage",
+        "unique_per_sbj": false,
+        "numeric": {
+            "unit": null,
+            "cutoff": {
+                "quantile_min": 0.0005,
+                "quantile_max": 0.9995,
+                "value_min": -100,
+                "value_max": 100
+            },
+            "impute_per_sbj": {
+                "forward": 0,
+                "backward": 0
+            }
+        }
+    },
+    "SPO2_pctKurtosis": {
+        "input": true,
+        "src_names": [
+            "HourlySPO2_pctKurtosis_v1"
+        ],
+        "label": "hourly Kurtosis of heart rate",
+        "unique_per_sbj": false,
+        "numeric": {
+            "unit": null,
+            "cutoff": {
+                "quantile_min": 0.0005,
+                "quantile_max": 0.9995,
+                "value_min": -100,
+                "value_max": 100
+            },
+            "impute_per_sbj": {
+                "forward": 0,
+                "backward": 0
+            }
+        }
+    },
+    "birth_weight": {
+        "input": false,
+        "src_names": [
+            "baby_weight"
+        ],
+        "label": "subject birth weight",
+        "unique_per_sbj": true,
+        "numeric": {
+            "unit": "grams",
+            "cutoff": {
+                "quantile_min": 0.0005,
+                "quantile_max": 0.9995,
+                "value_min": 300,
+                "value_max": 3000
+            },
+            "impute_per_sbj": {
+                "forward": 0,
+                "backward": 0
+            }
+        }
+    },
+    "ga_weeks": {
+        "input": false,
+        "src_names": [
+            "baby_gaweeks"
+        ],
+        "label": "subject birth weight",
+        "unique_per_sbj": true,
+        "numeric": {
+            "unit": "week",
+            "cutoff": {
+                "quantile_min": null,
+                "quantile_max": null,
+                "value_min": null,
+                "value_max": null
+            },
+            "impute_per_sbj": {
+                "forward": 0,
+                "backward": 0
+            }
+        }
+    },
+    "gender": {
+        "input": false,
+        "src_names": [
+            "baby_gender.factor"
+        ],
+        "label": "subject gender",
+        "unique_per_sbj": true,
+        "factor": {
+            "levels": {
+                "Male": [
+                    "male",
+                    "Male",
+                    "0"
+                ],
+                "Female": [
+                    "female",
+                    "Female",
+                    "1"
+                ]
+            }
+        }
+    }
+}
