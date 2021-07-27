@@ -20,6 +20,7 @@ Module description details
 
 """
 import json
+import os
 
 from fairstream.workers.Goblin import Goblin
 from fairstream.utils.prep_dicts import *
@@ -73,9 +74,8 @@ class Querier(Goblin):
         print('Success: Querier has updated variable dictionary!')
 
     def create_csv_pool(self, csv_pool_dir=None, overwrite=False, source_key=None, file_key=None):
-        import os
         if csv_pool_dir is None:  # set default csv chunk pool dir
-            csv_pool_dir = self.work_dir + '/csv_pool'
+            csv_pool_dir = os.path.join(self.work_dir, 'csv_pool')
             if not os.path.exists(csv_pool_dir):
                 os.mkdir(csv_pool_dir)
             else:

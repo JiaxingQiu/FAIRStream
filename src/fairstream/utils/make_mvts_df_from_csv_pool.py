@@ -18,8 +18,7 @@ def make_sample_info_from_csv(csv_pool_dir, source_dict, variable_dict, nsbj=Non
     df_file_dict['filename'] = os.listdir(csv_pool_dir)
     df_file_dict = df_file_dict[df_file_dict['filename'].str.endswith(
         '.csv')].reset_index(drop=True)
-    df_file_dict['fullname'] = csv_pool_dir + \
-        '/' + df_file_dict['filename'].astype(str)
+    df_file_dict['fullname'] = df_file_dict['filename'].astype(str).apply(lambda x: os.path.join(csv_pool_dir, x))
     df_file_dict["source_key"] = df_file_dict['filename'].str.split(
         sep, expand=True).loc[:, 0]
     df_file_dict["file_key"] = df_file_dict['filename'].str.split(
@@ -90,8 +89,9 @@ def make_sample_info_from_csv(csv_pool_dir, source_dict, variable_dict, nsbj=Non
         df_sample_info = df_file_dict[df_file_dict["__uid"].isin(
             list(uid_sampled))]
 
-        print("Sucess!  " + str(uid_sampled)+" out of " +
+        print("Success!  " + str(uid_sampled)+" out of " +
               str(NSBJ) + " subjects are sampled!")
+
     return df_sample_info
 
 
