@@ -1,5 +1,5 @@
-#pip install rpy2
 import rpy2.robjects as robjects
+
 
 robjects.r('''
     if (!require(lazyeval))  install.packages("lazyeval")

@@ -6,10 +6,10 @@ Module description details
 
 """
 
-from Class_Querier import Querier
-from Class_Engineer import Engineer
-from Class_Learner import Learner
-from Class_Reporter import Reporter
+from workers.Querier import Querier
+from workers.Engineer import Engineer
+from workers.Learner import Learner
+from workers.Reporter import Reporter
 
 class FAIRStream:
     
