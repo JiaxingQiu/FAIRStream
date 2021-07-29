@@ -7,12 +7,15 @@
     Usage example:
 
 """
+import random
+import missingno as msno
+import matplotlib.pyplot as plt
+
 from fairstream.workers.Episode import Episode
 from fairstream.workers.Goblin import Goblin
 
-from fairstream.utils.make_mvts_df_from_csv_pool import *
-from fairstream.utils.make_mvts_tfds_from_df import *
-import random
+from fairstream.utils import df_csv
+from fairstream.utils import tfds_df
 
 
 class Engineer(Goblin):
@@ -31,7 +34,7 @@ class Engineer(Goblin):
         if self.episode is None:
             return 'No episode defined -- you can use Engineer.DefineEpisode() to define one'
         episode = self.episode
-        self.mvts_df = make_mvts_df_from_csv_pool(csv_pool_dir, nsbj, frac, self.csv_source_dict, self.variable_dict, episode.input_time_len,
+        self.mvts_df = df_csv.make_mvts_df_from_csv_pool(csv_pool_dir, nsbj, frac, self.csv_source_dict, self.variable_dict, episode.input_time_len,
                                                   episode.output_time_len, episode.time_resolution, episode.time_lag, episode.anchor_gap, stratify_by=stratify_by, viz=viz, viz_ts=viz_ts)
         output_vars = []
         for var_dict in self.variable_dict.keys():
@@ -58,7 +61,7 @@ class Engineer(Goblin):
     def make_mvts_tfds_from_df(self, mvts_df, batch_size=32):
         mvts_df = mvts_df[self.input_vars + self.output_vars]
         episode = self.episode
-        mvts_tfds = make_mvts_tfds_from_df(mvts_df, input_vars=self.input_vars, output_vars=self.output_vars, input_time_len=episode.input_time_len,
+        mvts_tfds = tfds_df.make_mvts_tfds_from_df(mvts_df, input_vars=self.input_vars, output_vars=self.output_vars, input_time_len=episode.input_time_len,
                                            output_time_len=episode.output_time_len, time_resolution=episode.time_resolution, time_lag=episode.time_lag, batch_size=batch_size)
         return mvts_tfds
 
@@ -81,8 +84,6 @@ class Engineer(Goblin):
         print("Success! Engineer has two new attributes train_df and valid_df. ")
 
     def fillna_by_train_df(self, train_df, valid_df, input_vars, output_vars, impute_input=None, impute_output=None, fill_value=-333):
-
-        import missingno as msno
         # viz missingness
         print('--- Training MVTS DF missingness before imputation')
         msno.matrix(train_df, figsize=[15, 5], fontsize=10)
@@ -91,9 +92,9 @@ class Engineer(Goblin):
         msno.matrix(valid_df, figsize=[15, 5], fontsize=10)
         plt.show()
 
-        train_df_imputed, valid_df_imputed = cohort_fillna(
+        train_df_imputed, valid_df_imputed = df_csv.cohort_fillna(
             train_df=train_df, valid_df=valid_df, vars=input_vars, method=impute_input, fill_value=fill_value)
-        train_df_imputed, valid_df_imputed = cohort_fillna(
+        train_df_imputed, valid_df_imputed = df_csv.cohort_fillna(
             train_df=train_df_imputed, valid_df=valid_df_imputed, vars=output_vars, method=impute_output, fill_value=fill_value)
         self.train_df_imputed = train_df_imputed
         self.valid_df_imputed = valid_df_imputed

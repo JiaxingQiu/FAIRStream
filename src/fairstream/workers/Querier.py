@@ -23,7 +23,7 @@ import json
 import os
 
 from fairstream.workers.Goblin import Goblin
-from fairstream.utils.prep_dicts import *
+from fairstream.utils import prep_dicts
 from fairstream.utils.create_csv_pool import create_csv_pool
 
 
@@ -33,6 +33,8 @@ class Querier(Goblin):
         Goblin.__init__(self, work_dir)
         self.init_csv_source_dict()
         self.init_variable_dict()
+        # self.update_csv_source_dict()
+        # self.update_variable_dict()
 
     def __str__(self):
         return '\n'.join([
@@ -41,36 +43,36 @@ class Querier(Goblin):
         ])
 
     def init_csv_source_dict(self):
-        self.csv_source_dict_demo = init_csv_source_dict()
+        self.csv_source_dict_demo = prep_dicts.init_csv_source_dict()
         with open(self.meta_dir + '/csv_source_dict_demo.json', 'w') as f:
-            json.dump(self.csv_source_dict_demo, f)
+            json.dump(self.csv_source_dict_demo, f, indent=4)
         print('Success: Querier has initiated a csv source dictionary in:' +
               str(self.meta_dir) + '/csv_source_dict_demo.json')
 
     def init_variable_dict(self):
-        self.variable_dict_demo = init_variable_dict()
+        self.variable_dict_demo = prep_dicts.init_variable_dict()
         with open(self.meta_dir + '/variable_dict_demo.json', 'w') as f:
-            json.dump(self.variable_dict_demo, f)
+            json.dump(self.variable_dict_demo, f, indent=4)
         print('Success: Querier has initiated a variable dictionary in:' +
-              str(self.meta_dir) + '/csv_source_dict_demo.json')
+              str(self.meta_dir) + '/variable_dict_demo.json')
 
     # UI / UX tool that ask user to input study source file dictionary
     def update_csv_source_dict(self):
-        self.csv_source_dict_new = update_csv_source_dict()
+        self.csv_source_dict_new = prep_dicts.update_csv_source_dict()
         with open(self.meta_dir + '/csv_source_dict.json', 'w') as f:
-            json.dump(self.csv_source_dict_new, f)
+            json.dump(self.csv_source_dict_new, f, indent=4)
         print('Success: Querier has updated csv source dictionary!')
 
     def update_sql_source_dict(self):
-        self.sql_source_dict_new = update_sql_source_dict()
+        self.sql_source_dict_new = prep_dicts.update_sql_source_dict()
         with open(self.meta_dir + '/sql_source_dict.json', 'w') as f:
-            json.dump(self.sql_source_dict_new, f)
+            json.dump(self.sql_source_dict_new, f, indent=4)
         print('Success: Querier has updated sql source dictionary!')
 
     def update_variable_dict(self):
-        self.variable_dict_new = update_variable_dict()
+        self.variable_dict_new = prep_dicts.update_variable_dict()
         with open(self.meta_dir + '/variable_dict.json', 'w') as f:
-            json.dump(self.variable_dict_new, f)
+            json.dump(self.variable_dict_new, f, indent=4)
         print('Success: Querier has updated variable dictionary!')
 
     def create_csv_pool(self, csv_pool_dir=None, overwrite=False, source_key=None, file_key=None):
