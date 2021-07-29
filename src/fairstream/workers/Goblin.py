@@ -72,8 +72,8 @@ class Goblin:
     In my personal opinion, we need to rethink the prep_dicts.py file. 
     I think that it is not good practice to have entire dictionaries defined inside the prep_dicts.py file.
     We should extract those into json files, and have the prep_dicts.py file read those json files.
-    That way, we can write code to have users generate those json files with all of their variables,
-    and have a better flow of data through the program.
+    That way, we can write code to help users generate those json files with all of their variables before running any of our preprocessing code.
+    This will overall improve our flow of data through the program.
     """
 
     def read_csv_source_dict(self, show=False):

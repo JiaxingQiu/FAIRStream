@@ -3,15 +3,16 @@ from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
 import numpy as np
 from matplotlib import pyplot as plt
+import pandas as pd
+import os
 
-from fairstream.utils.engineer_df import *
+from fairstream.utils import engineer_df
 
 plt.rcParams.update({'figure.max_open_warning': 0})
 
 
 def make_sample_info_from_csv(csv_pool_dir, source_dict, variable_dict, nsbj=None, frac=0.3, stratify_by=None):
-    import pandas as pd
-    import os
+
     sep = "---"
     # Find all files in a directory with extension .csv in Python
     df_file_dict = pd.DataFrame()
@@ -95,7 +96,7 @@ def make_sample_info_from_csv(csv_pool_dir, source_dict, variable_dict, nsbj=Non
                 if len(usecols) > 0:
                     df = pd.read_csv(
                         str(fullname), low_memory=False, usecols=usecols)
-                    df = fix_df_raw(variable_dict, df, source_key)
+                    df = engineer_df.fix_df_raw(variable_dict, df, source_key)
                     df = df.drop_duplicates()
                     if grouping_df is None:
                         grouping_df = df
@@ -133,14 +134,14 @@ def make_sbjs_ts(df_sample_info, source_dict, variable_dict, time_resolution, vi
         for file_key in list(df_sample_info['file_key'].unique()):
 
             # get stacked raw df (cohort-wise)
-            df_raw = get_df_raw_from_csv(
+            df_raw = engineer_df.get_df_raw_from_csv(
                 variable_dict, df_sample_info, source_key, file_key, viz=viz)
 
             # fix current raw file (cohort-wise)
-            df_fix = fix_df_raw(variable_dict, df_raw, source_key)
+            df_fix = engineer_df.fix_df_raw(variable_dict, df_raw, source_key)
 
             # aggregate by time resolution (cohort-wise)
-            df_agg = agg_df_fix(variable_dict, df_fix, time_resolution)
+            df_agg = engineer_df.agg_df_fix(variable_dict, df_fix, time_resolution)
 
             # append file key to variable names
             suf_vars = [var for var in variable_dict.keys() if var not in [
@@ -299,17 +300,17 @@ def make_mvts_df_from_csv_pool(csv_pool_dir, nsbj, frac, source_dict, variable_d
 
     if viz:
         fig_title = "Visualize Cleaned DataFrame"
-        viz_df_hist(df_sbjs_ts, fig_title)
+        engineer_df.viz_df_hist(df_sbjs_ts, fig_title)
 
     df_episodes_ts = make_episodes_ts(
         df_sbjs_ts, variable_dict, input_time_len, output_time_len, time_resolution, time_lag, anchor_gap)
 
     if viz:
         fig_title = "Visualize Episode DataFrame"
-        viz_df_hist(df_episodes_ts, fig_title)
+        engineer_df.viz_df_hist(df_episodes_ts, fig_title)
     if viz_ts:
         fig_title = "Visualize Episode Data Variables over Time"
-        viz_episode_ts(df_episodes_ts, fig_title)
+        engineer_df.viz_episode_ts(df_episodes_ts, fig_title)
     return df_episodes_ts
 
 
