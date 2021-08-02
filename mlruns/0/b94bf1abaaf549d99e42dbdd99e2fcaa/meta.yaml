@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/Zack-UVA/Documents/FAIRStream/mlruns/0/b94bf1abaaf549d99e42dbdd99e2fcaa/artifacts
+end_time: 1627932079072
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+name: ''
+run_id: b94bf1abaaf549d99e42dbdd99e2fcaa
+run_uuid: b94bf1abaaf549d99e42dbdd99e2fcaa
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1627932078934
+status: 3
+tags: []
+user_id: Zack-UVA
