@@ -32,6 +32,12 @@ def agg_df_fix(variable_dict, df_fix, time_resolution):
             if col.split("___")[0] in fct_vars:
                 dummy_cols.append(col)
         df_fct_agg = df_fix.groupby(keys)[dummy_cols].agg('max').reset_index()
+        # fullfill levels defined in the dictionary but are not shown in the data
+        dummy_cols_all=[str(v)+"___"+str(l) for v in fct_vars for l in list(variable_dict[v]['factor']['levels'].keys())]
+        dummy_cols_left = list(set(dummy_cols_all) - set(dummy_cols))
+        for cl in dummy_cols_left:
+            df_fct_agg[cl] = 0.0
+
     df_agg = pd.merge(left=df_num_agg,right=df_fct_agg,on=keys,copy = False)# merge columns together
     
     return df_agg

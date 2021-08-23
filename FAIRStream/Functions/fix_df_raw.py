@@ -57,27 +57,39 @@ def fix_df_raw(variable_dict, df_raw, source_key):
                 print("--- fix variable dtype for " + str(var) + " --- failed.")
 
             try:
-                # "minmax", "standard", "maxabs", "robust", "rank", "power"
+                scaler = None
+                # "minmax", "standard", "maxabs", "robust", "rank", "power", "percentile"
                 if variable_dict[var]['numeric']['scaler'] == "minmax":
                     scaler = MinMaxScaler()
+                    df_raw[var] = scaler.fit_transform(df_raw[[var]])
                 elif variable_dict[var]['numeric']['scaler'] == "standard":
                     scaler = StandardScaler()
+                    df_raw[var] = scaler.fit_transform(df_raw[[var]])
                 elif variable_dict[var]['numeric']['scaler'] == "maxabs":
                     scaler = MaxAbsScaler()
+                    df_raw[var] = scaler.fit_transform(df_raw[[var]])
                 elif variable_dict[var]['numeric']['scaler'] == "robust":
                     scaler = RobustScaler()
+                    df_raw[var] = scaler.fit_transform(df_raw[[var]])
                 elif variable_dict[var]['numeric']['scaler'] == "rank":
                     scaler = QuantileTransformer()
+                    df_raw[var] = scaler.fit_transform(df_raw[[var]])
                 elif variable_dict[var]['numeric']['scaler'] == "power":
                     scaler = PowerTransformer()
-                else:
-                    continue
-                df_raw[var] = scaler.fit_transform(df_raw[[var]])
-                print("--- "+str(variable_dict[var]['numeric']['scaler'])+" standardize " + str(var) )
-                continue
-            except:
-                print("--- standardize " + str(var) + " --- failed")
+                    df_raw[var] = scaler.fit_transform(df_raw[[var]])
+                elif variable_dict[var]['numeric']['scaler'] == "percentile":# estimate the percentile 
+                    cuts = np.arange(0,1,0.001)
+                    scaler = np.nanquantile(df_raw[var],cuts, axis=None)
+                    for i in range(1,len(scaler)):
+                        df_raw.loc[np.array(df_raw[var]>=scaler[i-1])&np.array(df_raw[var]<scaler[i]), var]=cuts[i-1]
+                    
+                if scaler is not None: 
+                    print("--- "+str(variable_dict[var]['numeric']['scaler'])+" scaling " + str(var) )
+                    continue# if scaling is used, no upper / lower boundary will be used
 
+            except:
+                print("--- scaling " + str(var) + " --- skipped")
+            
             try:
                 upper = max(df_raw[var])
                 if variable_dict[var]['numeric']['cutoff']['quantile_max'] is not None:
@@ -98,8 +110,8 @@ def fix_df_raw(variable_dict, df_raw, source_key):
                 print("--- fix lower boundary for " + str(var) + " by " + str(lower))
             except:
                 print("--- fix lower boundary for " + str(var) + " --- failed.")
-            
-  
+
+           
         # ---- fix factor variables ----
         if 'factor' in variable_dict[var].keys():
             try:

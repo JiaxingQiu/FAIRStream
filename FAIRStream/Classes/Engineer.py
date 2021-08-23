@@ -71,11 +71,11 @@ class Engineer(Goblin):
        
         
          
-    def make_mvts_df_from_csv_pool(self, csv_pool_dir, nsbj=None, frac=0.3, viz=False, viz_ts=False, stratify_by=None):
+    def make_mvts_df_from_csv_pool(self, csv_pool_dir, nsbj=None, frac=0.3, topn_eps=None, viz=False, viz_ts=False, stratify_by=None, dummy_na=False):
         if self.episode is None:
             return 'No episode defined -- you can use Engineer.DefineEpisode() to define one'
         episode = self.episode
-        self.mvts_df = make_mvts_df_from_csv_pool(csv_pool_dir, nsbj, frac, self.csv_source_dict, self.variable_dict, episode.input_time_len, episode.output_time_len, episode.time_resolution, episode.time_lag, episode.anchor_gap, stratify_by=stratify_by, viz=viz, viz_ts=viz_ts)
+        self.mvts_df = make_mvts_df_from_csv_pool(csv_pool_dir, nsbj, frac, self.csv_source_dict, self.variable_dict, episode.input_time_len, episode.output_time_len, episode.time_resolution, episode.time_lag, episode.anchor_gap, stratify_by=stratify_by, viz=viz, viz_ts=viz_ts, dummy_na=dummy_na, topn_eps=topn_eps)
         output_vars = []
         for var_dict in self.variable_dict.keys():
             if 'output' in self.variable_dict[var_dict].keys():
@@ -151,10 +151,10 @@ class Engineer(Goblin):
         self.episode = Episode(input_time_len, output_time_len, self.variable_dict['__time']['unit'], time_resolution=time_resolution, time_lag=time_lag, anchor_gap=anchor_gap)
         print("Success! Engineer has updated attributes --- episode. ")
     
-    def BuildMVTS(self, csv_pool_dir, nsbj=None, frac=0.3, viz=False, viz_ts=False, stratify_by=None, valid_frac=0, test_frac=0, byepisode=False, batch_size=32, impute_input=None, impute_output=None, fill_value=-333):
+    def BuildMVTS(self, csv_pool_dir, nsbj=None, frac=0.3, viz=False, viz_ts=False, stratify_by=None, valid_frac=0, test_frac=0, byepisode=False, batch_size=32, impute_input=None, impute_output=None, fill_value=-333, dummy_na=False, topn_eps=None):
         self.read_csv_source_dict()
         self.read_variable_dict()
-        self.make_mvts_df_from_csv_pool(csv_pool_dir=csv_pool_dir, nsbj=nsbj, frac=frac, viz=viz, viz_ts=viz_ts, stratify_by=stratify_by)
+        self.make_mvts_df_from_csv_pool(csv_pool_dir=csv_pool_dir, nsbj=nsbj, frac=frac, viz=viz, viz_ts=viz_ts, stratify_by=stratify_by, dummy_na=dummy_na, topn_eps=topn_eps)
         self.split_df(mvts_df=self.mvts_df, valid_frac=valid_frac, test_frac=test_frac, byepisode=byepisode)
         self.cohort_fillna(impute_input=impute_input, impute_output=impute_output, fill_value=fill_value, viz=viz)
         

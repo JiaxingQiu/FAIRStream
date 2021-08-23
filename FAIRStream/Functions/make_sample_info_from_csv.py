@@ -64,5 +64,5 @@ def make_sample_info_from_csv(csv_pool_dir, source_dict, variable_dict, nsbj=Non
         uid_sampled = list(grouping_df.groupby(G)['__uid'].apply(lambda x: x.sample(frac=frac)).reset_index(drop=True))
         df_sample_info = df_file_dict[df_file_dict["__uid"].isin(list(uid_sampled))]  
         
-        print("Sucess!  " + str(uid_sampled)+" out of " + str(NSBJ) + " subjects are sampled!")
+    print("Sucess!  " + str(len(uid_sampled))+" out of " + str(NSBJ) + " subjects are sampled!")
     return df_sample_info

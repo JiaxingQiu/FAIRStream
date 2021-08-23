@@ -29,11 +29,12 @@ def init_variable_dict():
             "label": "log of episode burden index",
             "unique_per_sbj": False,
             "numeric": {
-                "scaler": "rank",
+                "scaler": "none",
+                
                 "unit": "log(percentage of daily episode duration +0.0001)",
                 "cutoff": {
-                    "quantile_min": 0.0005,
-                    "quantile_max": 0.9995,
+                    "quantile_min": 0.0001,
+                    "quantile_max": 0.9999,
                     "value_min": -8,
                     "value_max": 0,
                 },
@@ -44,16 +45,17 @@ def init_variable_dict():
             }
         },
         "age": {
-            "input": True,  # set input to True if this variable is an input
+            "input": False,  # set input to True if this variable is an input
             "src_names": ["Age"],
             "label": "patient age at admission",
             "unique_per_sbj": True,
             "numeric": {
-                "scaler": "rank", # "minmax", "standard", "maxabs", "robust", "rank", "power"
+                "scaler": "none",
+                 # "minmax", "standard", "maxabs", "robust", "rank", "power"
                 "unit": "year",
                 "cutoff": {  # cohort
-                    "quantile_min": 0.0005,
-                    "quantile_max": 0.9995,
+                    "quantile_min": 0.0001,
+                    "quantile_max": 0.9999,
                     "value_min": 0,
                     "value_max": 120,
                 },
@@ -64,16 +66,17 @@ def init_variable_dict():
             }
         },
         "HRMean": {
-            "input": True,
+            "input": False,
             "src_names": ["HRMean", "HeartRate"],
             "label": "patient houly mean heart rate",
             "unique_per_sbj": False,
             "numeric": {
-                "scaler": "rank",
+                "scaler": "none",
+                
                 "unit": "beats per minute",
                 "cutoff": {  # cohort
-                    "quantile_min": 0.0005,
-                    "quantile_max": 0.9995,
+                    "quantile_min": 0.0001,
+                    "quantile_max": 0.9999,
                     "value_min": 40,
                     "value_max": 140,
                 },

@@ -2,6 +2,7 @@ from matplotlib import pyplot as plt
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
 from sklearn.impute import SimpleImputer
+import numpy as np
  
 
 def cohort_fillna(df, vars, method=None, fill_value=-333, viz=False):
@@ -21,8 +22,10 @@ def cohort_fillna(df, vars, method=None, fill_value=-333, viz=False):
     elif method == "constant":
         imputer = SimpleImputer(strategy='constant', fill_value=fill_value)
     else:
-        return "--- Unrecogenized imputation method. original df returned"
+        print("--- Unrecogenized imputation method. original df returned")
+        return df
     
+    df[vars] = df[vars].replace([np.inf, -np.inf], np.nan, inplace=False)
     df[vars] = imputer.fit_transform(df[vars])
     df_imputed = df.copy() 
 

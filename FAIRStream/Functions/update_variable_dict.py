@@ -1,5 +1,5 @@
-
 def update_variable_dict():
+    
     variable_dict = {
         # id column in old sources / files
         "__uid": {
@@ -21,7 +21,6 @@ def update_variable_dict():
                 "timeMinutes"
             ],
             "label": "time since admission",
-            "unique_per_sbj": False,
             "unit": "minute"
         },
         "__anchor": {
@@ -29,12 +28,16 @@ def update_variable_dict():
                 "True_positive",
                 "True positive"
             ],
-            "label": "primary outcome result",
+            "label": "anchor for an episode",
             "unique_per_sbj": False,
             "factor": {
                 "levels": {
-                    "__1": ["0", "0.0"],
-                    "__2": ["1", "1.0"]
+                    #"__non": ["nan"], # no blood culture
+                    "__neg": ["0", "0.0"], # negative culture # if neg is higher than non
+                    "__pos": ["1", "1.0"] # positive culture
+                },
+                "impute_per_sbj":{
+                    "nan_level": "__non"
                 }
             }
         },
@@ -49,8 +52,11 @@ def update_variable_dict():
             "unique_per_sbj": False,
             "factor": {
                 "levels": { # ordinal
-                    "0": ["0", "0.0"],
-                    "1": ["1", "1.0"]
+                    "neg": ["0", "0.0"], # negative test
+                    "pos": ["1", "1.0"] # positive test
+                },
+                "impute_per_sbj":{
+                    "nan_level": "neg"
                 }
             }
         },
@@ -61,14 +67,15 @@ def update_variable_dict():
                 "age",
                 "AGE"
             ],
-            "label": "first recorded subject age since admission",
+            "label": "age at admission",
             "unique_per_sbj": True,
             "numeric": {
-                "scaler": "rank",
+                "scaler": "none",
+                
                 "unit": "year",
                 "cutoff": {
-                    "quantile_min": 0.0005,
-                    "quantile_max": 0.9995,
+                    "quantile_min": 0.0001,
+                    "quantile_max": 0.9999,
                     "value_min": 0,
                     "value_max": 110,
                 },
@@ -91,6 +98,10 @@ def update_variable_dict():
                 "levels": {
                     "Male": ["male", "Male", "0"],
                     "Female": ["female", "Female", "1"]
+                },
+                "impute_per_sbj":{
+                    
+                    "nan_level": "unknown"
                 }
             }
         },
@@ -107,6 +118,10 @@ def update_variable_dict():
                 "levels": {
                     "Black": 1,
                     "White": 2
+                },
+                "impute_per_sbj":{
+                    
+                    "nan_level": "White"
                 }
             }
         },
@@ -124,6 +139,10 @@ def update_variable_dict():
                     "African American": ["aa", "African american"],
                     "Asian": ["asian", "Asian"],
                     "Histopian": ["hist", "histopian", "Histopian"]
+                },
+                "impute_per_sbj":{
+                    
+                    "nan_level": "White"
                 }
             }
         },
@@ -139,8 +158,8 @@ def update_variable_dict():
                 "scaler": "minmax",
                 "unit": "celsius",
                 "cutoff": {
-                    "quantile_min": 0.0005,
-                    "quantile_max": 0.9995,
+                    "quantile_min": 0.0001,
+                    "quantile_max": 0.9999,
                     "value_min": 5,
                     "value_max": 60,
                 },
@@ -160,11 +179,12 @@ def update_variable_dict():
             "label": "subject heart rate",
             "unique_per_sbj": False,
             "numeric": {
-                "scaler": "rank",
+                "scaler": "none",
+                
                 "unit": "beats per minute",
                 "cutoff": {
-                    "quantile_min": 0.0005,
-                    "quantile_max": 0.9995,
+                    "quantile_min": 0.0001,
+                    "quantile_max": 0.9999,
                     "value_min": 10,
                     "value_max": 200
                 },
@@ -183,11 +203,12 @@ def update_variable_dict():
             "label": "subject systolic blood pressure",
             "unique_per_sbj": False,
             "numeric": {
-                "scaler": "rank",
+                "scaler": "none",
+                
                 "unit": "mm Hg",
                 "cutoff": {
-                    "quantile_min": 0.0005,
-                    "quantile_max": 0.9995,
+                    "quantile_min": 0.0001,
+                    "quantile_max": 0.9999,
                     "value_min": 0,
                     "value_max": 100
                 },
@@ -206,11 +227,12 @@ def update_variable_dict():
             "label": "subject diastolic blood pressure",
             "unique_per_sbj": False,
             "numeric": {
-                "scaler": "rank",
+                "scaler": "none",
+                
                 "unit": "mm Hg",
                 "cutoff": {
-                    "quantile_min": 0.0005,
-                    "quantile_max": 0.9995,
+                    "quantile_min": 0.0001,
+                    "quantile_max": 0.9999,
                     "value_min": 0,
                     "value_max": 100
                 },
@@ -229,11 +251,12 @@ def update_variable_dict():
             "label": "subject respiratory rate",
             "unique_per_sbj": False,
             "numeric": {
-                "scaler": "rank",
+                "scaler": "none",
+                
 
                 "cutoff": {
-                    "quantile_min": 0.0005,
-                    "quantile_max": 0.9995,
+                    "quantile_min": 0.0001,
+                    "quantile_max": 0.9999,
                     "value_min": 0,
                     "value_max": 200
                 },
@@ -251,11 +274,12 @@ def update_variable_dict():
             "label": "SpO2",
             "unique_per_sbj": False,
             "numeric": {
-                "scaler": "rank",
+                "scaler": "none",
+                
 
                 "cutoff": {
-                    "quantile_min": 0.0005,
-                    "quantile_max": 0.9995,
+                    "quantile_min": 0.0001,
+                    "quantile_max": 0.9999,
                     "value_min": 0,
                     "value_max": 79
                 },
@@ -272,11 +296,12 @@ def update_variable_dict():
             "label": "Glucose",
             "unique_per_sbj": False,
             "numeric": {
-                "scaler": "rank",
+                "scaler": "none",
+                
 
                 "cutoff": {
-                    "quantile_min": 0.0005,
-                    "quantile_max": 0.9995,
+                    "quantile_min": 0.0001,
+                    "quantile_max": 0.9999,
                     "value_min": 49,
                     "value_max": 460
                 },
@@ -293,11 +318,12 @@ def update_variable_dict():
             "label": "Bilirubin",
             "unique_per_sbj": False,
             "numeric": {
-                "scaler": "rank",
+                "scaler": "none",
+                
 
                 "cutoff": {
-                    "quantile_min": 0.0005,
-                    "quantile_max": 0.9995,
+                    "quantile_min": 0.0001,
+                    "quantile_max": 0.9999,
                     "value_min": 0,
                     "value_max": 50
                 },
@@ -315,11 +341,12 @@ def update_variable_dict():
             "label": "Potassium",
             "unique_per_sbj": False,
             "numeric": {
-                "scaler": "rank",
+                "scaler": "none",
+                
 
                 "cutoff": {
-                    "quantile_min": 0.0005,
-                    "quantile_max": 0.9995,
+                    "quantile_min": 0.0001,
+                    "quantile_max": 0.9999,
                     "value_min": 2.4,
                     "value_max": 6.6
                 },
@@ -337,11 +364,12 @@ def update_variable_dict():
             "label": "Albumin",
             "unique_per_sbj": False,
             "numeric": {
-                "scaler": "rank",
+                "scaler": "none",
+                
 
                 "cutoff": {
-                    "quantile_min": 0.0005,
-                    "quantile_max": 0.9995,
+                    "quantile_min": 0.0001,
+                    "quantile_max": 0.9999,
                     "value_min": 0,
                     "value_max": 5
                 },
@@ -359,11 +387,12 @@ def update_variable_dict():
             "label": "Calcium",
             "unique_per_sbj": False,
             "numeric": {
-                "scaler": "rank",
+                "scaler": "none",
+                
 
                 "cutoff": {
-                    "quantile_min": 0.0005,
-                    "quantile_max": 0.9995,
+                    "quantile_min": 0.0001,
+                    "quantile_max": 0.9999,
                     "value_min": 6.1,
                     "value_max": 12
                 },
@@ -381,11 +410,10 @@ def update_variable_dict():
             "label": "WBC",
             "unique_per_sbj": False,
             "numeric": {
-                "scaler": "rank",
-
+                "scaler": "none",
                 "cutoff": {
-                    "quantile_min": 0.0005,
-                    "quantile_max": 0.9995,
+                    "quantile_min": 0.0001,
+                    "quantile_max": 0.9999,
                     "value_min": 0,
                     "value_max": 33.85
                 },
@@ -398,16 +426,16 @@ def update_variable_dict():
             }
         },
         # "pt": {
-        #     "input":True,
-        #     "src_names": [ 'PARTIAL.THROMBOPLASTIN.TIME',
+        #     "input":False,
+        #     "src_names": [ ,
         #     ],
         #     "label": "PT",
         #     "unique_per_sbj": False,
         #     "attr": {
         #         "numeric":{
         #
-        #         "cutoff":{"quantile_min": 0.0005,
-        #            "quantile_max": 0.9995,"value_min": 0,
+        #         "cutoff":{"quantile_min": 0.0001,
+        #            "quantile_max": 0.9999,"value_min": 0,
         #         "value_max": 5,
         #         "unit": "TODO",
         #
@@ -423,11 +451,11 @@ def update_variable_dict():
             "label": "Creatinine",
             "unique_per_sbj": False,
             "numeric": {
-                "scaler": "rank",
-
+                "scaler": "none",
+                
                 "cutoff": {
-                    "quantile_min": 0.0005,
-                    "quantile_max": 0.9995,
+                    "quantile_min": 0.0001,
+                    "quantile_max": 0.9999,
                     "value_min": 0,
                     "value_max": 10
                 },
@@ -446,11 +474,11 @@ def update_variable_dict():
             "label": "PlateletCount",
             "unique_per_sbj": False,
             "numeric": {
-                "scaler": "rank",
-
+                "scaler": "none",
+                
                 "cutoff": {
-                    "quantile_min": 0.0005,
-                    "quantile_max": 0.9995,
+                    "quantile_min": 0.0001,
+                    "quantile_max": 0.9999,
                     "value_min": 0,
                     "value_max": 1001
                 },
@@ -468,11 +496,11 @@ def update_variable_dict():
             "label": "ALT",
             "unique_per_sbj": False,
             "numeric": {
-                "scaler": "rank",
-
+                "scaler": "none",
+                
                 "cutoff": {
-                    "quantile_min": 0.0005,
-                    "quantile_max": 0.9995,
+                    "quantile_min": 0.0001,
+                    "quantile_max": 0.9999,
                     "value_min": 0,
                     "value_max": 1085
                 },
@@ -490,11 +518,12 @@ def update_variable_dict():
             "label": "ALP",
             "unique_per_sbj": False,
             "numeric": {
-                "scaler": "rank",
+                "scaler": "none",
+                
 
                 "cutoff": {
-                    "quantile_min": 0.0005,
-                    "quantile_max": 0.9995,
+                    "quantile_min": 0.0001,
+                    "quantile_max": 0.9999,
                     "value_min": 0,
                     "value_max": 800
                 },
@@ -512,11 +541,12 @@ def update_variable_dict():
             "label": "AST",
             "unique_per_sbj": False,
             "numeric": {
-                "scaler": "rank",
+                "scaler": "none",
+                
 
                 "cutoff": {
-                    "quantile_min": 0.0005,
-                    "quantile_max": 0.9995,
+                    "quantile_min": 0.0001,
+                    "quantile_max": 0.9999,
                     "value_min": 0,
                     "value_max": 1203
                 },
@@ -530,15 +560,16 @@ def update_variable_dict():
         },
         "paco2": {
             "input": True,
-            "src_names": ['PCO2', 'PaCO2'],
+            "src_names": ['PCO2', 'PaCO2'], # arterial
             "label": "PaCO2",
             "unique_per_sbj": False,
             "numeric": {
-                "scaler": "rank",
+                "scaler": "none",
+                
 
                 "cutoff": {
-                    "quantile_min": 0.0005,
-                    "quantile_max": 0.9995,
+                    "quantile_min": 0.0001,
+                    "quantile_max": 0.9999,
                     "value_min": 0,
                     "value_max": 100.5
                 },
@@ -556,11 +587,12 @@ def update_variable_dict():
             "label": "Chloride",
             "unique_per_sbj": False,
             "numeric": {
-                "scaler": "rank",
+                "scaler": "none",
+                
 
                 "cutoff": {
-                    "quantile_min": 0.0005,
-                    "quantile_max": 0.9995,
+                    "quantile_min": 0.0001,
+                    "quantile_max": 0.9999,
                     "value_min": 83,
                     "value_max": 132
                 },
@@ -578,11 +610,12 @@ def update_variable_dict():
             "label": "Troponin",
             "unique_per_sbj": False,
             "numeric": {
-                "scaler": "rank",
+                "scaler": "none",
+                
 
                 "cutoff": {
-                    "quantile_min": 0.0005,
-                    "quantile_max": 0.9995,
+                    "quantile_min": 0.0001,
+                    "quantile_max": 0.9999,
                     "value_min": 0,
                     "value_max": 23.5
                 },
@@ -600,11 +633,12 @@ def update_variable_dict():
             "label": "partial_thromboplastin_time",
             "unique_per_sbj": False,
             "numeric": {
-                "scaler": "rank",
+                "scaler": "none",
+                
 
                 "cutoff": {
-                    "quantile_min": 0.0005,
-                    "quantile_max": 0.9995,
+                    "quantile_min": 0.0001,
+                    "quantile_max": 0.9999,
                     "value_min": 0,
                     "value_max": 140
                 },
@@ -622,11 +656,10 @@ def update_variable_dict():
             "label": "Lactate",
             "unique_per_sbj": False,
             "numeric": {
-                "scaler": "rank",
-
+                "scaler": "none",
                 "cutoff": {
-                    "quantile_min": 0.0005,
-                    "quantile_max": 0.9995,
+                    "quantile_min": 0.0001,
+                    "quantile_max": 0.9999,
                     "value_min": 0,
                     "value_max": 19.1
                 },
@@ -644,11 +677,10 @@ def update_variable_dict():
             "label": "BUN",
             "unique_per_sbj": False,
             "numeric": {
-                "scaler": "rank",
-
+                "scaler": "none",
                 "cutoff": {
-                    "quantile_min": 0.0005,
-                    "quantile_max": 0.9995,
+                    "quantile_min": 0.0001,
+                    "quantile_max": 0.9999,
                     "value_min": 0,
                     "value_max": 143
                 },
@@ -658,26 +690,26 @@ def update_variable_dict():
                     "forward": 24*60,
                     "backward": 12*60
                 }
-            },
-            "magnesium": {
-                "input": True, "src_names": ['MAGNESIUM', 'Magnesium'],
-                "label": "Magnesium",
-                "unique_per_sbj": False,
-                "numeric": {
-                "scaler": "rank",
+            }
+        },
+        "magnesium": {
+            "input": True, 
+            "src_names": ['MAGNESIUM', 'Magnesium'],
+            "label": "Magnesium",
+            "unique_per_sbj": False,
+            "numeric": {
+                "scaler": "none",
+                "cutoff": {
+                    "quantile_min": 0.0001,
+                    "quantile_max": 0.9999,
+                    "value_min": 0,
+                    "value_max": 3.4
+                },
+                "unit": "TODO",
 
-                    "cutoff": {
-                        "quantile_min": 0.0005,
-                        "quantile_max": 0.9995,
-                        "value_min": 0,
-                        "value_max": 3.4
-                    },
-                    "unit": "TODO",
-
-                    "impute_per_sbj": {
-                        "forward": 24*60,
-                        "backward": 12*60
-                    }
+                "impute_per_sbj": {
+                    "forward": 24*60,
+                    "backward": 12*60
                 }
             }
         }
