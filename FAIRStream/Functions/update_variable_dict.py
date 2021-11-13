@@ -32,12 +32,12 @@ def update_variable_dict():
             "unique_per_sbj": False,
             "factor": {
                 "levels": {
-                    #"__non": ["nan"], # no blood culture
+                    "__nbc": ["nan"], # whether or not include "__non" (no blood culture) as one of anchor option
                     "__neg": ["0", "0.0"], # negative culture # if neg is higher than non
                     "__pos": ["1", "1.0"] # positive culture
                 },
                 "impute_per_sbj":{
-                    "nan_level": "__non"
+                    "nan_level": "__nbc" # create a seperate column for nan indicator
                 }
             }
         },
@@ -52,11 +52,12 @@ def update_variable_dict():
             "unique_per_sbj": False,
             "factor": {
                 "levels": { # ordinal
+                    "nbc": ["nan"], # whether or not include "__non" (no blood culture) as one of anchor option
                     "neg": ["0", "0.0"], # negative test
                     "pos": ["1", "1.0"] # positive test
                 },
                 "impute_per_sbj":{
-                    "nan_level": "neg"
+                    "nan_level": "nbc"
                 }
             }
         },

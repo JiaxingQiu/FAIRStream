@@ -92,7 +92,7 @@ class Engineer(Goblin):
         self.output_vars = output_vars
         # coordinate column name orders
         base_vars = list(self.mvts_df.columns[~self.mvts_df.columns.isin(self.input_vars+self.output_vars)])
-        self.mvts_df = self.mvts_df[self.input_vars+self.output_vars+base_vars]
+        self.mvts_df = self.mvts_df[self.input_vars+self.output_vars+base_vars] # mvts_df is not imputed
         print("Success! Engineer has updated attributes --- mvts_df, input_vars, output_vars. ")
 
      
@@ -127,24 +127,19 @@ class Engineer(Goblin):
             self.test_df = self.test_df.drop(columns=['split_id'])
         print("Success! Engineer has updated attributes --- train_df, valid_df and test_df. ")
     
-    def cohort_fillna(self, impute_input=None, impute_output=None, fill_value=-333, viz=False):
+    def cohort_fillna(self, impute_input=None, impute_output=None, fill_value=-333, viz=True):
         if self.train_df is not None:
-            df = self.train_df
-            df_imputed = cohort_fillna(df=df, vars=self.input_vars, method=impute_input, fill_value=fill_value, viz=viz)
-            df_imputed = cohort_fillna(df=df_imputed, vars=self.output_vars, method=impute_output, fill_value=fill_value, viz=viz)
-            self.train_df_imputed = df_imputed
-        
-        if self.valid_df is not None:
-            df = self.valid_df
-            df_imputed = cohort_fillna(df=df, vars=self.input_vars, method=impute_input, fill_value=fill_value, viz=viz)
-            df_imputed = cohort_fillna(df=df_imputed, vars=self.output_vars, method=impute_output, fill_value=fill_value, viz=viz)
-            self.valid_df_imputed = df_imputed
-        
-        if self.test_df is not None:
-            df = self.test_df
-            df_imputed = cohort_fillna(df=df, vars=self.input_vars, method=impute_input, fill_value=fill_value, viz=viz)
-            df_imputed = cohort_fillna(df=df_imputed, vars=self.output_vars, method=impute_output, fill_value=fill_value, viz=viz)
-            self.test_df_imputed = df_imputed
+            self.train_df_imputed = cohort_fillna(refer_df=self.train_df, df=self.train_df, vars=self.input_vars, method=impute_input, fill_value=fill_value, viz=viz)
+            self.train_df_imputed = cohort_fillna(refer_df=self.train_df, df=self.train_df_imputed, vars=self.output_vars, method=impute_output, fill_value=fill_value, viz=viz)
+            
+            if self.valid_df is not None:
+                self.valid_df_imputed  = cohort_fillna(refer_df=self.train_df, df=self.valid_df, vars=self.input_vars, method=impute_input, fill_value=fill_value, viz=viz)
+                self.valid_df_imputed  = cohort_fillna(refer_df=self.train_df, df=self.valid_df_imputed , vars=self.output_vars, method=impute_output, fill_value=fill_value, viz=viz)
+                
+            if self.test_df is not None:
+                self.test_df_imputed = cohort_fillna(refer_df=self.train_df, df=self.test_df, vars=self.input_vars, method=impute_input, fill_value=fill_value, viz=viz)
+                self.test_df_imputed = cohort_fillna(refer_df=self.train_df, df=self.test_df_imputed, vars=self.output_vars, method=impute_output, fill_value=fill_value, viz=viz)
+                
         print("Success! Engineer has updated attributes --- train_df_imputed, valid_df_imputed and test_df_imputed. ")
     
     def DefineEpisode(self, input_time_len, output_time_len, time_resolution=None, time_lag=None, anchor_gap=None):

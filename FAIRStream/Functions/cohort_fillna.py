@@ -5,7 +5,9 @@ from sklearn.impute import SimpleImputer
 import numpy as np
  
 
-def cohort_fillna(df, vars, method=None, fill_value=-333, viz=False):
+def cohort_fillna(refer_df, df, vars, method=None, fill_value=-333, viz=False):
+    # refer_df is the one to train the parameters of imputor 
+    # df is the target dataframe to impute
     if viz:
         import missingno as msno
         msno.matrix(df, figsize=[10, 3], fontsize=6)
@@ -25,9 +27,12 @@ def cohort_fillna(df, vars, method=None, fill_value=-333, viz=False):
         print("--- Unrecogenized imputation method. original df returned")
         return df
     
+    refer_df[vars] = refer_df[vars].replace([np.inf, -np.inf], np.nan, inplace=False)
     df[vars] = df[vars].replace([np.inf, -np.inf], np.nan, inplace=False)
-    df[vars] = imputer.fit_transform(df[vars])
+    imputer.fit(refer_df[vars])
     df_imputed = df.copy() 
+    df_imputed[vars] = imputer.transform(df[vars])
+    
 
     if viz:
         msno.matrix(df_imputed, figsize=[10, 3], fontsize=6)
