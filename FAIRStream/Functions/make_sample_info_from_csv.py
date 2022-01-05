@@ -21,8 +21,9 @@ def make_sample_info_from_csv(csv_pool_dir, source_dict, variable_dict, nsbj=Non
     NSBJ = df_file_dict[df_file_dict["file_key"]==file_key_base].loc[:,"__uid"].nunique()
     
     # filter filenames to include in source dict
-    files_include = [file for source in source_dict.keys() for file in source_dict[source].keys() if source_dict[source][file]['include'] ]
-    df_file_dict = df_file_dict[df_file_dict['file_key'].isin(files_include)]
+    sources_include = [source for source in source_dict.keys() for file in source_dict[source].keys() if bool(source_dict[source][file]['include']) ]
+    files_include = [file for source in source_dict.keys() for file in source_dict[source].keys() if bool(source_dict[source][file]['include']) ]
+    df_file_dict = df_file_dict[ (df_file_dict['source_key'].isin(sources_include)) & (df_file_dict['file_key'].isin(files_include)) ]
     
     if stratify_by is None:
         stratify_by_list = []
