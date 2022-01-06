@@ -81,10 +81,10 @@ class Engineer(Goblin):
         if self.df_csv_fullname_ls is None:
             self.df_csv_fullname_ls = init_csv_fullname_ls(csv_pool_dir)
         if replace:
-            print("Engineer is sampling with replacement")
+            print("Engineer is sampling with replacement --- ")
             self.df_csv_fullname_ls = init_csv_fullname_ls(csv_pool_dir)
         else:
-            print("Engineer is sampling without replacement")
+            print("Engineer is sampling without replacement --- ")
 
         self.mvts_df, self.df_csv_fullname_ls = make_mvts_df_from_csv_pool(self.df_csv_fullname_ls, nsbj, frac, self.csv_source_dict, self.variable_dict, episode.input_time_len, episode.output_time_len, episode.time_resolution, episode.time_lag, episode.anchor_gap, stratify_by=stratify_by, viz=viz, viz_ts=viz_ts, dummy_na=dummy_na, topn_eps=topn_eps)
         
@@ -163,6 +163,11 @@ class Engineer(Goblin):
         self.read_variable_dict()
         self.make_mvts_df_from_csv_pool(csv_pool_dir=csv_pool_dir, nsbj=nsbj, frac=frac, replace=replace, viz=viz, viz_ts=viz_ts, stratify_by=stratify_by, dummy_na=dummy_na, topn_eps=topn_eps)
         self.split_df(mvts_df=self.mvts_df, valid_frac=valid_frac, test_frac=test_frac, byepisode=byepisode)
+        if nsbj <= 50:
+            print("Using 'mask' for predictor imputation (constant value -333) because too few subjects are sampled.")
+            impute_input = "constant"
+            print("Using 'mode' for response imputation because too few subjects are sampled.")
+            impute_output = "most_frequent"
         self.cohort_fillna(impute_input=impute_input, impute_output=impute_output, fill_value=fill_value, viz=viz)
         
         if self.train_df_imputed is not None:
