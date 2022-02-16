@@ -28,6 +28,7 @@ class Engineer(Goblin):
         self.output_vars = None
         self.episode = None
         self.sample_info = None
+        self.sample_replace = None 
         self.mvts_df = None
         self.mvts_tfds = None
         self.train_df = None
@@ -40,8 +41,18 @@ class Engineer(Goblin):
         self.valid_tfds = None
         self.test_tfds = None
         self.df_csv_fullname_ls = None
-
-    def info(self):
+        
+    def __str__(self):
+        try:
+            print("\n------------------ episode definition --------------\n")
+            print(self.episode)
+        except:
+            pass
+        try:
+            print("\n------------------ sampling info --------------\n")
+            print(self.sample_info)
+        except:
+            pass
         print("\n----------------------------- Engineer Attributes List ------------------------\n")
         print(list(self.__dict__.keys()))
         print("\n------------------------------------- Inputs  --------------------------------- \n")
@@ -70,6 +81,8 @@ class Engineer(Goblin):
             print(self.test_df.shape)
         except:
             pass
+
+        return "Engineer info."
        
         
          
@@ -85,8 +98,9 @@ class Engineer(Goblin):
             self.df_csv_fullname_ls = init_csv_fullname_ls(csv_pool_dir)
         else:
             print("Engineer is sampling without replacement --- ")
-
-        self.mvts_df, self.df_csv_fullname_ls = make_mvts_df_from_csv_pool(self.df_csv_fullname_ls, nsbj, frac, self.csv_source_dict, self.variable_dict, episode.input_time_len, episode.output_time_len, episode.time_resolution, episode.time_lag, episode.anchor_gap, stratify_by=stratify_by, viz=viz, viz_ts=viz_ts, dummy_na=dummy_na, topn_eps=topn_eps)
+        
+        self.sample_replace = replace
+        self.mvts_df, self.df_csv_fullname_ls, self.sample_info = make_mvts_df_from_csv_pool(self.df_csv_fullname_ls, nsbj, frac, self.csv_source_dict, self.variable_dict, episode.input_time_len, episode.output_time_len, episode.time_resolution, episode.time_lag, episode.anchor_gap, stratify_by=stratify_by, viz=viz, viz_ts=viz_ts, dummy_na=dummy_na, topn_eps=topn_eps)
         
         output_vars = []
         for var_dict in self.variable_dict.keys():

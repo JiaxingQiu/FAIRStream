@@ -46,14 +46,17 @@ class Episode:
         else:
             self.anchor_gap = anchor_gap
         
-        print('\n'.join([
+        
+    
+    def __str__(self):
+        return '\n'.join([
             f' ',
-            f'Success! An episode is defined to ',
+            f'An episode is defined to ',
             f'--- use {self.input_time_len} {self.time_unit}(s) long input variables ',
             f'--- predict {self.output_time_len} {self.time_unit}(s) response variables into the future',
             f'--- lag {self.time_lag} {self.time_unit}(s) between predictors and responses',
             f'--- increase by every {self.time_resolution} {self.time_unit}(s)',
             f'--- last at most {self.anchor_gap} {self.time_unit}(s) long'
-        ]))
+        ])
 
         

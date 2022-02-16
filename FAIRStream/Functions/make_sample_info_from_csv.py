@@ -58,5 +58,6 @@ def make_sample_info_from_csv(df_file_dict, source_dict, variable_dict, nsbj=Non
 
     df_file_dict_updated.loc[df_file_dict_updated["__uid"].isin(list(df_sample_info['__uid'])), 'already_sampled'] += 1
 
-    print("Success!  " + str(len(uid_sampled))+" out of " + str(NSBJ_include) + " subjects are sampled from csv pool of size " + str(NSBJ)+ " !")
-    return df_sample_info, df_file_dict_updated
+    sampling_message = str(len(uid_sampled))+"---out of---" + str(NSBJ_include) + "---subjects are sampled from csv pool of size---" + str(NSBJ)
+    print(sampling_message)
+    return df_sample_info, df_file_dict_updated, sampling_message
