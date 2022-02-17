@@ -28,7 +28,6 @@ class Engineer(Goblin):
         self.output_vars = None
         self.episode = None
         self.sample_info = None
-        self.sample_replace = None 
         self.mvts_df = None
         self.mvts_tfds = None
         self.train_df = None
@@ -45,7 +44,7 @@ class Engineer(Goblin):
     def __str__(self):
         try:
             print("\n------------------ episode definition --------------\n")
-            print(self.episode)
+            print(self.episode.__dict__)
         except:
             pass
         try:
@@ -99,7 +98,6 @@ class Engineer(Goblin):
         else:
             print("Engineer is sampling without replacement --- ")
         
-        self.sample_replace = replace
         self.mvts_df, self.df_csv_fullname_ls, self.sample_info = make_mvts_df_from_csv_pool(self.df_csv_fullname_ls, nsbj, frac, self.csv_source_dict, self.variable_dict, episode.input_time_len, episode.output_time_len, episode.time_resolution, episode.time_lag, episode.anchor_gap, stratify_by=stratify_by, viz=viz, viz_ts=viz_ts, dummy_na=dummy_na, topn_eps=topn_eps)
         
         output_vars = []
@@ -173,6 +171,7 @@ class Engineer(Goblin):
         print("Success! Engineer has updated attributes --- episode. ")
     
     def BuildMVTS(self, csv_pool_dir, nsbj=None, frac=0.3, replace=True, viz=False, viz_ts=False, stratify_by=None, valid_frac=0, test_frac=0, byepisode=False, batch_size=32, impute_input=None, impute_output=None, fill_value=-333, dummy_na=False, topn_eps=None):
+        
         self.read_csv_source_dict()
         self.read_variable_dict()
         self.make_mvts_df_from_csv_pool(csv_pool_dir=csv_pool_dir, nsbj=nsbj, frac=frac, replace=replace, viz=viz, viz_ts=viz_ts, stratify_by=stratify_by, dummy_na=dummy_na, topn_eps=topn_eps)
@@ -191,6 +190,38 @@ class Engineer(Goblin):
         if self.test_df_imputed is not None:
             self.test_tfds = make_mvts_tfds_from_df(self.test_df_imputed, input_vars=self.input_vars, output_vars=self.output_vars, input_time_len=self.episode.input_time_len, output_time_len=self.episode.output_time_len, time_resolution=self.episode.time_resolution, time_lag=self.episode.time_lag, batch_size=batch_size)
         
+        self.hist = {'episode': self.episode.__dict__,
+                     'split': {
+                         'stratify_by': stratify_by,
+                         'valid_frac': valid_frac,
+                         'test_frac': test_frac,
+                         'byepisode': byepisode,
+                         'first_neps': topn_eps
+                     },
+                     'imputation': {
+                         'x': impute_input,
+                         'y': impute_output
+                     },
+                     'data': {
+                         'x_cols': str(self.input_vars),
+                         'y_cols': str(self.output_vars),
+                         'df_shape': {
+                             'train': self.train_df.shape,
+                             'valid': self.valid_df.shape if self.valid_df is not None else 'None',
+                             'test': self.test_df.shape if self.test_df is not None else 'None'
+                         },
+                         'tfds_batch_shape': {
+                             'x': [example_inputs.shape for example_inputs, example_labels in self.train_tfds.take(1)],
+                             'y': [example_labels.shape for example_inputs, example_labels in self.train_tfds.take(1)]
+                         }
+                     },
+                     'sampling':{
+                         'sample_size':[self.sample_info.split(sep='---')[0]],
+                         'cohort_size':[self.sample_info.split(sep='---')[2]],
+                         'csv_pool_size':[self.sample_info.split(sep='---')[4]],
+                         'with_replacement':replace
+                      }
+                    }
         print("Success! Engineer has updated attributes --- train_tfds, valid_tfds and test_tfds. ")
         
     def ExtractXY(self, shape_type="3d"):
@@ -207,7 +238,4 @@ class Engineer(Goblin):
         
         return X_train, Y_train, X_valid, Y_valid, X_test, Y_test
 
-        
 
-
-        

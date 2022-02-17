@@ -24,6 +24,7 @@ class Episode:
         Returns:
             self attributes with corresponding names
         """
+
         if time_unit is None:
             time_unit = "(time unit not specified)"
         self.time_unit = str(time_unit)
