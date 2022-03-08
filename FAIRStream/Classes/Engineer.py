@@ -85,16 +85,16 @@ class Engineer(Goblin):
        
         
          
-    def make_mvts_df_from_csv_pool(self, csv_pool_dir, nsbj=None, frac=0.3, replace=True, topn_eps=None, viz=False, viz_ts=False, stratify_by=None, dummy_na=False):
+    def make_mvts_df_from_csv_pool(self, csv_pool_dir, nsbj=None, frac=0.3, replace=True, topn_eps=None, viz=False, viz_ts=False, stratify_by=None, dummy_na=False, sep="---"):
         if self.episode is None:
             return 'No episode defined -- you can use Engineer.DefineEpisode() to define one'
         episode = self.episode
 
         if self.df_csv_fullname_ls is None:
-            self.df_csv_fullname_ls = init_csv_fullname_ls(csv_pool_dir)
+            self.df_csv_fullname_ls = init_csv_fullname_ls(csv_pool_dir, sep=sep)
         if replace:
             print("Engineer is sampling with replacement --- ")
-            self.df_csv_fullname_ls = init_csv_fullname_ls(csv_pool_dir)
+            self.df_csv_fullname_ls = init_csv_fullname_ls(csv_pool_dir, sep=sep)
         else:
             print("Engineer is sampling without replacement --- ")
         
@@ -170,11 +170,11 @@ class Engineer(Goblin):
         self.episode = Episode(input_time_len, output_time_len, self.variable_dict['__time']['unit'], time_resolution=time_resolution, time_lag=time_lag, anchor_gap=anchor_gap)
         print("Success! Engineer has updated attributes --- episode. ")
     
-    def BuildMVTS(self, csv_pool_dir, nsbj=None, frac=0.3, replace=True, viz=False, viz_ts=False, stratify_by=None, valid_frac=0, test_frac=0, byepisode=False, batch_size=32, impute_input=None, impute_output=None, fill_value=-333, dummy_na=False, topn_eps=None):
+    def BuildMVTS(self, csv_pool_dir, nsbj=None, frac=0.3, replace=True, viz=False, viz_ts=False, stratify_by=None, valid_frac=0, test_frac=0, byepisode=False, batch_size=32, impute_input=None, impute_output=None, fill_value=-333, dummy_na=False, topn_eps=None, sep="---"):
         
         self.read_csv_source_dict()
         self.read_variable_dict()
-        self.make_mvts_df_from_csv_pool(csv_pool_dir=csv_pool_dir, nsbj=nsbj, frac=frac, replace=replace, viz=viz, viz_ts=viz_ts, stratify_by=stratify_by, dummy_na=dummy_na, topn_eps=topn_eps)
+        self.make_mvts_df_from_csv_pool(csv_pool_dir=csv_pool_dir, nsbj=nsbj, frac=frac, replace=replace, viz=viz, viz_ts=viz_ts, stratify_by=stratify_by, dummy_na=dummy_na, topn_eps=topn_eps, sep=sep)
         self.split_df(mvts_df=self.mvts_df, valid_frac=valid_frac, test_frac=test_frac, byepisode=byepisode)
         if nsbj <= 50:
             print("Using 'mask' for predictor imputation (constant value -333) because too few subjects are sampled.")

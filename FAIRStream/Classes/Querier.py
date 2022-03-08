@@ -80,7 +80,7 @@ class Querier(Goblin):
         self.read_variable_dict()
         cmp_src_csv(self.csv_source_dict, self.variable_dict, nrows=nrows, var_list=var_list)
  
-    def create_csv_pool(self, csv_pool_dir=None, overwrite=False, source_key=None, file_key=None):
+    def create_csv_pool(self, csv_pool_dir=None, overwrite=False, source_key=None, file_key=None, sep="---"):
         import os
         if csv_pool_dir is None: # set default csv chunk pool dir
             csv_pool_dir = self.work_dir + '/csv_pool'
@@ -95,6 +95,6 @@ class Querier(Goblin):
         self.csv_pool_dir  = csv_pool_dir
         self.read_csv_source_dict()
         self.read_variable_dict()
-        create_csv_pool(self.csv_source_dict, self.variable_dict, self.csv_pool_dir, source_key=source_key, file_key=file_key)
+        create_csv_pool(self.csv_source_dict, self.variable_dict, self.csv_pool_dir, source_key=source_key, file_key=file_key, sep=sep)
         
     

@@ -1,7 +1,6 @@
 import pandas as pd
 
-def create_csv_pool(csv_source_dict, variable_dict, csv_pool_dir, source_key=None, file_key=None):
-    sep = '---'
+def create_csv_pool(csv_source_dict, variable_dict, csv_pool_dir, source_key=None, file_key=None, sep = '---'):
     
     if source_key is None and file_key is None: # create csv pool for all source files
         for source_key in csv_source_dict.keys():
