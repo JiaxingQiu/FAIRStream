@@ -32,7 +32,7 @@ def get_df_raw_from_csv(variable_dict, df_sample_info, source_key, file_key, viz
     
    # loop through all subjects csvs of this file key
     for fullname in list(df_sample_info.loc[np.array(df_sample_info['source_key']==source_key) & np.array(df_sample_info["file_key"]==file_key), 'fullname']):
-        colnames_df = pd.read_csv(str(fullname), index_col=0, nrows=0).columns.tolist()# only read colume names row
+        colnames_df = pd.read_csv(str(fullname), nrows=0).columns.tolist()# only read colume names row
         usecols = list(set(colnames_df).intersection(set(colnames_dict)))# intersect columns exist in variable dictionary
         df = pd.read_csv(str(fullname), low_memory=False, usecols=usecols)# read selected columns only
         df_raw = pd.concat([df_raw,df])
