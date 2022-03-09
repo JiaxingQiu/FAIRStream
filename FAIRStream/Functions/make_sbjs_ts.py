@@ -28,7 +28,13 @@ def make_sbjs_ts(df_sample_info, variable_dict, time_resolution, viz=False, dumm
             # append file key to variable names 
             suf_vars = [var for var in variable_dict.keys() if var not in ['__uid','__time','__anchor']]
             df_agg_org = df_agg[list(set(df_agg.columns)-set(suf_vars))]
-            df_agg_suf  = df_agg[list(set(df_agg.columns).intersection(set(suf_vars)))].add_suffix('___'+str(file_key))
+            df_agg_suf  = df_agg[list(set(df_agg.columns).intersection(set(suf_vars)))]#.add_suffix('___'+str(file_key))
+            redun_cols = list(set(df_agg_org.columns).intersection(set(df_agg_suf.columns)))
+            if len(redun_cols) > 0:
+                for redun_col in redun_cols:
+                    df_redun = pd.concat([df_agg_org[redun_col],df_agg_suf[redun_col]],axis=1)
+                    df_agg_org[redun_col] = df_redun.iloc[:,0:2].mean(axis=1)
+                    df_agg_suf = df_agg_suf.drop([redun_col], axis=1)
             df_agg = pd.concat([df_agg_org,df_agg_suf],axis=1)
             # merge multiple files
             if df_src_merged is None: #  first df_agg from current source
