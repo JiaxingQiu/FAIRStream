@@ -14,7 +14,7 @@ import FAIRStream
 # csv pool folder directory
 csv_pool_path = '/Users/jiaxingqiu/Documents/CAMA_projects/BSI/code/projects/csv_pool'
 # current experiment working directory
-work_dir = '/Users/jiaxingqiu/Documents/CAMA_projects/BSI/code/projects/case_txp'
+work_dir = '/Users/jiaxingqiu/Documents/CAMA_projects/BSI/code/projects/exp1'
 
 
 # initiate a FAIRStream object instance for BSI project
@@ -28,7 +28,7 @@ bsi_stream.engineer.DefineEpisode(input_time_len=2*24*60, # using vital signs an
                                   output_time_len=1, # predict one time unit into the future
                                   time_resolution=60, # aggregate minutely data to one row per hour 
                                   time_lag=0,  # no time lag between predictors and response
-                                  anchor_gap=7*24*60) # the minimum distance between two episodes
+                                  anchor_gap=4*24*60) # the minimum distance between two episodes
 
                                   # Build MVTS dataframe or tfds  (notice that the engineer now has new attributes)
 bsi_stream.engineer.BuildMVTS(csv_pool_path, 
@@ -39,4 +39,5 @@ bsi_stream.engineer.BuildMVTS(csv_pool_path,
                               batch_size = 64, # batch size (usually 32,64,128..)
                               impute_input='median', # imputation on predictors
                               impute_output='median',
-                              sep="_")# imputation on response (no need in BSI project)
+                              sep="_",
+                              return_episode=True)# imputation on response (no need in BSI project)

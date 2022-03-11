@@ -28,7 +28,7 @@ def fix_df_raw(variable_dict, df_raw, source_key):
         if len(set(variable_dict[var]['src_names']).intersection(set(df_raw.columns.to_list())))==0: # skip variable if not in current dataframe
             continue
         include_vars.append(var) # append to list of all variables to include
-
+        
         
         # --- fix variable name ---
         src_name = df_raw.columns[df_raw.columns.isin(variable_dict[var]['src_names'])][0]
@@ -133,7 +133,8 @@ def fix_df_raw(variable_dict, df_raw, source_key):
                 if len(outdict_levels) != 0: # if number of levels exceed nlevel_max_per_sbj, fix factor var's level limit (including y outcome var)
                     df_raw.loc[np.array(df_raw['__uid']==__uid) & np.array(df_raw[var].isin(outdict_levels)),[var]] = np.nan
                     print("--- fix out-of-dictionry level/orders --- " + str(outdict_levels) + "--- with NA for subject ---" + str(__uid))
-    
+        
+        print("-- " + str(var) + " fixed")
     
     df_fix = df_raw[include_vars]
     

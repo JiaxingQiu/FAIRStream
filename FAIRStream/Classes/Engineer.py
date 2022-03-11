@@ -40,6 +40,7 @@ class Engineer(Goblin):
         self.valid_tfds = None
         self.test_tfds = None
         self.df_csv_fullname_ls = None
+        self.sbj_df = None # raw dataframe per subject 
         
     def __str__(self):
         try:
@@ -85,7 +86,7 @@ class Engineer(Goblin):
        
         
          
-    def make_mvts_df_from_csv_pool(self, csv_pool_dir, nsbj=None, frac=0.3, replace=True, topn_eps=None, viz=False, viz_ts=False, stratify_by=None, dummy_na=False, sep="---"):
+    def make_mvts_df_from_csv_pool(self, csv_pool_dir, nsbj=None, frac=0.3, replace=True, topn_eps=None, viz=False, viz_ts=False, stratify_by=None, dummy_na=False, sep="---", return_episode=True):
         if self.episode is None:
             return 'No episode defined -- you can use Engineer.DefineEpisode() to define one'
         episode = self.episode
@@ -98,26 +99,27 @@ class Engineer(Goblin):
         else:
             print("Engineer is sampling without replacement --- ")
         
-        self.mvts_df, self.df_csv_fullname_ls, self.sample_info = make_mvts_df_from_csv_pool(self.df_csv_fullname_ls, nsbj, frac, self.csv_source_dict, self.variable_dict, episode.input_time_len, episode.output_time_len, episode.time_resolution, episode.time_lag, episode.anchor_gap, stratify_by=stratify_by, viz=viz, viz_ts=viz_ts, dummy_na=dummy_na, topn_eps=topn_eps)
+        self.mvts_df, self.df_csv_fullname_ls, self.sample_info, self.sbj_df = make_mvts_df_from_csv_pool(self.df_csv_fullname_ls, nsbj, frac, self.csv_source_dict, self.variable_dict, episode.input_time_len, episode.output_time_len, episode.time_resolution, episode.time_lag, episode.anchor_gap, stratify_by=stratify_by, viz=viz, viz_ts=viz_ts, dummy_na=dummy_na, topn_eps=topn_eps, return_episode=return_episode)
         
-        output_vars = []
-        for var_dict in self.variable_dict.keys():
-            if 'output' in self.variable_dict[var_dict].keys():
-                if self.variable_dict[var_dict]['output']:
-                    output_vars = output_vars + list(self.mvts_df.columns[self.mvts_df.columns.str.startswith(str(var_dict))])
-        assert len(output_vars)>0, 'Engineer couldn\'t find output columns corresponding to the variable dictionary'
-        input_vars = []
-        for var_dict in self.variable_dict.keys():
-            if 'input' in self.variable_dict[var_dict].keys():
-                if self.variable_dict[var_dict]['input']:
-                    input_vars = input_vars + list(self.mvts_df.columns[self.mvts_df.columns.str.startswith(str(var_dict))])
-        assert len(input_vars)>0, 'Engineer couldn\'t find input columns corresponding to the variable dictionary'
-        self.input_vars = input_vars
-        self.output_vars = output_vars
-        # coordinate column name orders
-        base_vars = list(self.mvts_df.columns[~self.mvts_df.columns.isin(self.input_vars+self.output_vars)])
-        self.mvts_df = self.mvts_df[self.input_vars+self.output_vars+base_vars] # mvts_df is not imputed
-        print("Success! Engineer has updated attributes --- mvts_df, input_vars, output_vars. ")
+        if self.mvts_df is not None:
+            output_vars = []
+            for var_dict in self.variable_dict.keys():
+                if 'output' in self.variable_dict[var_dict].keys():
+                    if self.variable_dict[var_dict]['output']:
+                        output_vars = output_vars + list(self.mvts_df.columns[self.mvts_df.columns.str.startswith(str(var_dict))])
+            assert len(output_vars)>0, 'Engineer couldn\'t find output columns corresponding to the variable dictionary'
+            input_vars = []
+            for var_dict in self.variable_dict.keys():
+                if 'input' in self.variable_dict[var_dict].keys():
+                    if self.variable_dict[var_dict]['input']:
+                        input_vars = input_vars + list(self.mvts_df.columns[self.mvts_df.columns.str.startswith(str(var_dict))])
+            assert len(input_vars)>0, 'Engineer couldn\'t find input columns corresponding to the variable dictionary'
+            self.input_vars = input_vars
+            self.output_vars = output_vars
+            # coordinate column name orders
+            base_vars = list(self.mvts_df.columns[~self.mvts_df.columns.isin(self.input_vars+self.output_vars)])
+            self.mvts_df = self.mvts_df[self.input_vars+self.output_vars+base_vars] # mvts_df is not imputed
+            print("Success! Engineer has updated attributes --- mvts_df, input_vars, output_vars. ")
 
      
        
@@ -170,59 +172,63 @@ class Engineer(Goblin):
         self.episode = Episode(input_time_len, output_time_len, self.variable_dict['__time']['unit'], time_resolution=time_resolution, time_lag=time_lag, anchor_gap=anchor_gap)
         print("Success! Engineer has updated attributes --- episode. ")
     
-    def BuildMVTS(self, csv_pool_dir, nsbj=None, frac=0.3, replace=True, viz=False, viz_ts=False, stratify_by=None, valid_frac=0, test_frac=0, byepisode=False, batch_size=32, impute_input=None, impute_output=None, fill_value=-333, dummy_na=False, topn_eps=None, sep="---"):
+    def BuildMVTS(self, csv_pool_dir, nsbj=None, frac=0.3, replace=True, viz=False, viz_ts=False, stratify_by=None, valid_frac=0, test_frac=0, byepisode=False, batch_size=32, impute_input=None, impute_output=None, fill_value=-333, dummy_na=False, topn_eps=None, sep="---",return_episode=True):
         
         self.read_csv_source_dict()
         self.read_variable_dict()
-        self.make_mvts_df_from_csv_pool(csv_pool_dir=csv_pool_dir, nsbj=nsbj, frac=frac, replace=replace, viz=viz, viz_ts=viz_ts, stratify_by=stratify_by, dummy_na=dummy_na, topn_eps=topn_eps, sep=sep)
-        self.split_df(mvts_df=self.mvts_df, valid_frac=valid_frac, test_frac=test_frac, byepisode=byepisode)
-        if nsbj <= 50:
-            print("Using 'mask' for predictor imputation (constant value -333) because too few subjects are sampled.")
-            impute_input = "constant"
-            print("Using 'mode' for response imputation because too few subjects are sampled.")
-            impute_output = "most_frequent"
-        self.cohort_fillna(impute_input=impute_input, impute_output=impute_output, fill_value=fill_value, viz=viz)
-        
-        if self.train_df_imputed is not None:
-            self.train_tfds = make_mvts_tfds_from_df(self.train_df_imputed, input_vars=self.input_vars, output_vars=self.output_vars, input_time_len=self.episode.input_time_len, output_time_len=self.episode.output_time_len, time_resolution=self.episode.time_resolution, time_lag=self.episode.time_lag, batch_size=batch_size)
-        if self.valid_df_imputed is not None:
-            self.valid_tfds = make_mvts_tfds_from_df(self.valid_df_imputed, input_vars=self.input_vars, output_vars=self.output_vars, input_time_len=self.episode.input_time_len, output_time_len=self.episode.output_time_len, time_resolution=self.episode.time_resolution, time_lag=self.episode.time_lag, batch_size=batch_size)
-        if self.test_df_imputed is not None:
-            self.test_tfds = make_mvts_tfds_from_df(self.test_df_imputed, input_vars=self.input_vars, output_vars=self.output_vars, input_time_len=self.episode.input_time_len, output_time_len=self.episode.output_time_len, time_resolution=self.episode.time_resolution, time_lag=self.episode.time_lag, batch_size=batch_size)
-        
-        self.hist = {'episode': self.episode.__dict__,
-                     'split': {
-                         'stratify_by': stratify_by,
-                         'valid_frac': valid_frac,
-                         'test_frac': test_frac,
-                         'byepisode': byepisode,
-                         'first_neps': topn_eps
-                     },
-                     'imputation': {
-                         'x': impute_input,
-                         'y': impute_output
-                     },
-                     'data': {
-                         'x_cols': str(self.input_vars),
-                         'y_cols': str(self.output_vars),
-                         'df_shape': {
-                             'train': self.train_df.shape,
-                             'valid': self.valid_df.shape if self.valid_df is not None else 'None',
-                             'test': self.test_df.shape if self.test_df is not None else 'None'
-                         },
-                         'tfds_batch_shape': {
-                             'x': [example_inputs.shape for example_inputs, example_labels in self.train_tfds.take(1)],
-                             'y': [example_labels.shape for example_inputs, example_labels in self.train_tfds.take(1)]
-                         }
-                     },
-                     'sampling':{
-                         'sample_size':[self.sample_info.split(sep='---')[0]],
-                         'cohort_size':[self.sample_info.split(sep='---')[2]],
-                         'csv_pool_size':[self.sample_info.split(sep='---')[4]],
-                         'with_replacement':replace
-                      }
-                    }
-        print("Success! Engineer has updated attributes --- train_tfds, valid_tfds and test_tfds. ")
+        self.make_mvts_df_from_csv_pool(csv_pool_dir=csv_pool_dir, nsbj=nsbj, frac=frac, replace=replace, viz=viz, viz_ts=viz_ts, stratify_by=stratify_by, dummy_na=dummy_na, topn_eps=topn_eps, sep=sep, return_episode=return_episode)
+        if self.mvts_df is None:
+            print("No episode-wise MVTS dataframe available, return subject-wise dataframe instead.")
+            return
+        else:
+            self.split_df(mvts_df=self.mvts_df, valid_frac=valid_frac, test_frac=test_frac, byepisode=byepisode)
+            if nsbj <= 50:
+                print("Using 'mask' for predictor imputation (constant value -333) because too few subjects are sampled.")
+                impute_input = "constant"
+                print("Using 'mode' for response imputation because too few subjects are sampled.")
+                impute_output = "most_frequent"
+            self.cohort_fillna(impute_input=impute_input, impute_output=impute_output, fill_value=fill_value, viz=viz)
+            
+            if self.train_df_imputed is not None:
+                self.train_tfds = make_mvts_tfds_from_df(self.train_df_imputed, input_vars=self.input_vars, output_vars=self.output_vars, input_time_len=self.episode.input_time_len, output_time_len=self.episode.output_time_len, time_resolution=self.episode.time_resolution, time_lag=self.episode.time_lag, batch_size=batch_size)
+            if self.valid_df_imputed is not None:
+                self.valid_tfds = make_mvts_tfds_from_df(self.valid_df_imputed, input_vars=self.input_vars, output_vars=self.output_vars, input_time_len=self.episode.input_time_len, output_time_len=self.episode.output_time_len, time_resolution=self.episode.time_resolution, time_lag=self.episode.time_lag, batch_size=batch_size)
+            if self.test_df_imputed is not None:
+                self.test_tfds = make_mvts_tfds_from_df(self.test_df_imputed, input_vars=self.input_vars, output_vars=self.output_vars, input_time_len=self.episode.input_time_len, output_time_len=self.episode.output_time_len, time_resolution=self.episode.time_resolution, time_lag=self.episode.time_lag, batch_size=batch_size)
+            
+            self.hist = {'episode': self.episode.__dict__,
+                        'split': {
+                            'stratify_by': stratify_by,
+                            'valid_frac': valid_frac,
+                            'test_frac': test_frac,
+                            'byepisode': byepisode,
+                            'first_neps': topn_eps
+                        },
+                        'imputation': {
+                            'x': impute_input,
+                            'y': impute_output
+                        },
+                        'data': {
+                            'x_cols': str(self.input_vars),
+                            'y_cols': str(self.output_vars),
+                            'df_shape': {
+                                'train': self.train_df.shape,
+                                'valid': self.valid_df.shape if self.valid_df is not None else 'None',
+                                'test': self.test_df.shape if self.test_df is not None else 'None'
+                            },
+                            'tfds_batch_shape': {
+                                'x': [example_inputs.shape for example_inputs, example_labels in self.train_tfds.take(1)],
+                                'y': [example_labels.shape for example_inputs, example_labels in self.train_tfds.take(1)]
+                            }
+                        },
+                        'sampling':{
+                            'sample_size':[self.sample_info.split(sep='---')[0]],
+                            'cohort_size':[self.sample_info.split(sep='---')[2]],
+                            'csv_pool_size':[self.sample_info.split(sep='---')[4]],
+                            'with_replacement':replace
+                        }
+                        }
+            print("Success! Engineer has updated attributes --- train_tfds, valid_tfds and test_tfds. ")
         
     def ExtractXY(self, shape_type="3d"):
         X_train=None
