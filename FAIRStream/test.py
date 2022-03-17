@@ -14,7 +14,7 @@ import FAIRStream
 # csv pool folder directory
 csv_pool_path = '/Users/jiaxingqiu/Documents/CAMA_projects/BSI/code/projects/csv_pool'
 # current experiment working directory
-work_dir = '/Users/jiaxingqiu/Documents/CAMA_projects/BSI/code/projects/exp1'
+work_dir = '/Users/jiaxingqiu/Documents/CAMA_projects/BSI/code/projects/case_fwd'
 
 
 # initiate a FAIRStream object instance for BSI project
