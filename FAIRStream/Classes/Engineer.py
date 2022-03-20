@@ -174,8 +174,6 @@ class Engineer(Goblin):
     
     def BuildMVTS(self, csv_pool_dir, nsbj=None, frac=0.3, replace=True, viz=False, viz_ts=False, stratify_by=None, valid_frac=0, test_frac=0, byepisode=False, batch_size=32, impute_input=None, impute_output=None, fill_value=-333, dummy_na=False, topn_eps=None, sep="---",return_episode=True):
         
-        self.read_csv_source_dict()
-        self.read_variable_dict()
         self.make_mvts_df_from_csv_pool(csv_pool_dir=csv_pool_dir, nsbj=nsbj, frac=frac, replace=replace, viz=viz, viz_ts=viz_ts, stratify_by=stratify_by, dummy_na=dummy_na, topn_eps=topn_eps, sep=sep, return_episode=return_episode)
         if self.mvts_df is None:
             print("No episode-wise MVTS dataframe available, return subject-wise dataframe instead.")

@@ -37,6 +37,9 @@ class Querier(Goblin):
         Goblin.__init__(self, work_dir)
         self.init_csv_source_dict()
         self.init_variable_dict()
+        self.read_csv_source_dict()
+        self.read_variable_dict()
+        
         
     def __str__(self):
         return '\n'.join([

@@ -3,18 +3,18 @@ from Functions.fix_df_raw import *
 
 
 def make_sample_info_from_csv(df_file_dict, source_dict, variable_dict, nsbj=None, frac=0.3, stratify_by=None):
-    
+   
+    # total number of subjects in the csv pool
     df_file_dict_updated = df_file_dict
-
-    # get overlapping source from one cohort
-    file_key_base = df_file_dict["file_key"].value_counts(ascending=True).index[0] 
-    NSBJ = df_file_dict[df_file_dict["file_key"]==file_key_base].loc[:,"__uid"].nunique()
+    NSBJ = df_file_dict_updated.groupby("source_key").apply(lambda x: x["file_key"].value_counts()[0]).sum()
     
     # filter filenames to include in source dict
     sources_include = [source for source in source_dict.keys() for file in source_dict[source].keys() if bool(source_dict[source][file]['include']) ]
     files_include = [file for source in source_dict.keys() for file in source_dict[source].keys() if bool(source_dict[source][file]['include']) ]
-    df_file_dict = df_file_dict[ (df_file_dict['source_key'].isin(sources_include)) & (df_file_dict['file_key'].isin(files_include)) & (df_file_dict['already_sampled']==0)]
-    NSBJ_include = df_file_dict[df_file_dict["file_key"]==file_key_base].loc[:,"__uid"].nunique()
+    df_file_dict = df_file_dict_updated[ (df_file_dict_updated['source_key'].isin(sources_include)) & (df_file_dict_updated['file_key'].isin(files_include)) & (df_file_dict_updated['already_sampled']==0)]
+    
+    #file_key_base = df_file_dict["file_key"].value_counts(ascending=True).index[-1] 
+    NSBJ_include = df_file_dict.groupby("source_key").apply(lambda x: x["file_key"].value_counts()[0]).sum()
     
     if stratify_by is None:
         stratify_by_list = []
@@ -26,7 +26,8 @@ def make_sample_info_from_csv(df_file_dict, source_dict, variable_dict, nsbj=Non
     if len(stratify_by_list)==0:
         if nsbj is not None:
             frac = min(int(nsbj),int(NSBJ_include)) / NSBJ_include
-        uid_sampled = list(df_file_dict[df_file_dict["file_key"]==file_key_base].loc[:,"__uid"].sample(frac=frac))
+        df_uid = pd.DataFrame({"__uid":df_file_dict.loc[:,"__uid"].unique()})
+        uid_sampled = list(df_uid.loc[:,"__uid"].sample(frac=frac)) #[df_file_dict["file_key"]==file_key_base]
         df_sample_info = df_file_dict[df_file_dict["__uid"].isin(uid_sampled)]
     else:
         grouping_df = None
@@ -58,6 +59,6 @@ def make_sample_info_from_csv(df_file_dict, source_dict, variable_dict, nsbj=Non
 
     df_file_dict_updated.loc[df_file_dict_updated["__uid"].isin(list(df_sample_info['__uid'])), 'already_sampled'] += 1
 
-    sampling_message = str(len(uid_sampled))+"---out of---" + str(NSBJ_include) + "---subjects are sampled from csv pool of size---" + str(NSBJ)
+    sampling_message = str(len(set(uid_sampled)))+"---out of---" + str(NSBJ_include) + "---subjects are sampled from csv pool of size---" + str(NSBJ)
     print(sampling_message)
     return df_sample_info, df_file_dict_updated, sampling_message

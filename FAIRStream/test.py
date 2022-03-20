@@ -32,7 +32,7 @@ bsi_stream.engineer.DefineEpisode(input_time_len=2*24*60, # using vital signs an
 
                                   # Build MVTS dataframe or tfds  (notice that the engineer now has new attributes)
 bsi_stream.engineer.BuildMVTS(csv_pool_path, 
-                              nsbj = 30, # number of subjects / patients to sample from the pool 
+                              nsbj = 20, # number of subjects / patients to sample from the pool 
                               replace=False, # sample with replacement or not 
                               valid_frac = 0.2, # fraction of number of subjects in validation dataset
                               test_frac = 0.1, # fraction of number of subjects in left-out test dataset
