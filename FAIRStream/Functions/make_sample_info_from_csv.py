@@ -2,8 +2,23 @@ import pandas as pd
 from Functions.fix_df_raw import *
 
 
-def make_sample_info_from_csv(df_file_dict, source_dict, variable_dict, nsbj=None, frac=0.3, stratify_by=None):
+def make_sample_info_from_csv(df_file_dict, source_dict, variable_dict, nsbj=None, frac=0.3, stratify_by=None, skip_uid=None, keep_uid=None):
    
+    
+    # skip uid in "skip_uid list"
+    if skip_uid is not None:
+        try:
+            df_file_dict = df_file_dict[~df_file_dict["__uid"].isin(skip_uid)]
+        except:
+            print("Failed to skip given uid list, please check input")
+    
+    # only keep uid in "keep_uid list"
+    if keep_uid is not None:
+        try:
+            df_file_dict = df_file_dict[df_file_dict["__uid"].isin(keep_uid)]
+        except:
+            print("Failed to only keep given uid list, please check input")
+       
     # total number of subjects in the csv pool
     df_file_dict_updated = df_file_dict
     NSBJ = df_file_dict_updated.groupby("source_key").apply(lambda x: x["file_key"].value_counts()[0]).sum()

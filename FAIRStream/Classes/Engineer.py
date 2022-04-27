@@ -86,7 +86,7 @@ class Engineer(Goblin):
        
         
          
-    def make_mvts_df_from_csv_pool(self, csv_pool_dir, nsbj=None, frac=0.3, replace=True, topn_eps=None, viz=False, viz_ts=False, stratify_by=None, dummy_na=False, sep="---", return_episode=True):
+    def make_mvts_df_from_csv_pool(self, csv_pool_dir, nsbj=None, frac=0.3, replace=True, topn_eps=None, viz=False, viz_ts=False, stratify_by=None, dummy_na=False, sep="---", return_episode=True, skip_uid=None, keep_uid=None):
         if self.episode is None:
             return 'No episode defined -- you can use Engineer.DefineEpisode() to define one'
         episode = self.episode
@@ -99,7 +99,7 @@ class Engineer(Goblin):
         else:
             print("Engineer is sampling without replacement --- ")
         
-        self.mvts_df, self.df_csv_fullname_ls, self.sample_info, self.sbj_df = make_mvts_df_from_csv_pool(self.df_csv_fullname_ls, nsbj, frac, self.csv_source_dict, self.variable_dict, episode.input_time_len, episode.output_time_len, episode.time_resolution, episode.time_lag, episode.anchor_gap, stratify_by=stratify_by, viz=viz, viz_ts=viz_ts, dummy_na=dummy_na, topn_eps=topn_eps, return_episode=return_episode)
+        self.mvts_df, self.df_csv_fullname_ls, self.sample_info, self.sbj_df = make_mvts_df_from_csv_pool(self.df_csv_fullname_ls, nsbj, frac, self.csv_source_dict, self.variable_dict, episode.input_time_len, episode.output_time_len, episode.time_resolution, episode.time_lag, episode.anchor_gap, stratify_by=stratify_by, viz=viz, viz_ts=viz_ts, dummy_na=dummy_na, topn_eps=topn_eps, return_episode=return_episode, skip_uid=skip_uid, keep_uid=keep_uid)
         
         if self.mvts_df is not None:
             output_vars = []
@@ -172,9 +172,9 @@ class Engineer(Goblin):
         self.episode = Episode(input_time_len, output_time_len, self.variable_dict['__time']['unit'], time_resolution=time_resolution, time_lag=time_lag, anchor_gap=anchor_gap)
         print("Success! Engineer has updated attributes --- episode. ")
     
-    def BuildMVTS(self, csv_pool_dir, nsbj=None, frac=0.3, replace=True, viz=False, viz_ts=False, stratify_by=None, valid_frac=0, test_frac=0, byepisode=False, batch_size=32, impute_input=None, impute_output=None, fill_value=-333, dummy_na=False, topn_eps=None, sep="---",return_episode=True):
+    def BuildMVTS(self, csv_pool_dir, nsbj=None, frac=0.3, replace=True, viz=False, viz_ts=False, stratify_by=None, valid_frac=0, test_frac=0, byepisode=False, batch_size=32, impute_input=None, impute_output=None, fill_value=-333, dummy_na=False, topn_eps=None, sep="---",return_episode=True, skip_uid=None, keep_uid=None):
         
-        self.make_mvts_df_from_csv_pool(csv_pool_dir=csv_pool_dir, nsbj=nsbj, frac=frac, replace=replace, viz=viz, viz_ts=viz_ts, stratify_by=stratify_by, dummy_na=dummy_na, topn_eps=topn_eps, sep=sep, return_episode=return_episode)
+        self.make_mvts_df_from_csv_pool(csv_pool_dir=csv_pool_dir, nsbj=nsbj, frac=frac, replace=replace, viz=viz, viz_ts=viz_ts, stratify_by=stratify_by, dummy_na=dummy_na, topn_eps=topn_eps, sep=sep, return_episode=return_episode, skip_uid=skip_uid, keep_uid=keep_uid)
         if self.mvts_df is None:
             print("No episode-wise MVTS dataframe available, return subject-wise dataframe instead.")
             return
