@@ -101,8 +101,11 @@ def make_episodes_ts(df_sbjs_ts, variable_dict, input_time_len, output_time_len,
             # relative time sequence in an episode (relative to time 0)
             rel_start = 2*int(-(input_time_len+time_lag)//time_resolution)
             rel_stop = 2*int(np.ceil(output_time_len/time_resolution)) #(2 = (0,1))
+            # adjust expanded window to avoid overlapping with previous episode
+            rel_start = max(rel_start, int(np.ceil(output_time_len/time_resolution)) - int(anchor_gap//time_resolution))
+            rel_stop = min(rel_stop, int(anchor_gap//time_resolution)-int((input_time_len+time_lag)//time_resolution))
             ep_rel_ts = list(range(rel_start, rel_stop))#0 included # episdoe relative time sequence
-
+            
             # absolute time sequence for current episode
             abs_start = ep_abs_time + rel_start
             abs_stop = ep_abs_time + rel_stop
@@ -114,7 +117,7 @@ def make_episodes_ts(df_sbjs_ts, variable_dict, input_time_len, output_time_len,
             abs_start_final = ep_abs_time - (input_time_len+time_lag)//time_resolution 
             abs_stop_final = ep_abs_time + int(np.ceil(output_time_len/time_resolution))
             ep_abs_ts_final = list(range(int(abs_start_final), int(abs_stop_final)))
-            assert len(ep_abs_ts) == 2*len(ep_abs_ts_final), "Expended window length is not twice as large as the final window length"
+            # assert len(ep_abs_ts) == 2*len(ep_abs_ts_final), "Expended window length for f/b imputation is not twice as large as the final episode length"
             
             # make abs ts a data frame for left merge
             df_ts = pd.DataFrame({'__time_bin':ep_abs_ts})

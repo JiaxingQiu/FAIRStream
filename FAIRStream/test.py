@@ -24,11 +24,11 @@ bsi_stream = FAIRStream.FAIRStream(work_dir)
 bsi_stream.engineer.variable_dict
 
 # define an episode (notice that the engineer now has new attributes)
-bsi_stream.engineer.DefineEpisode(input_time_len=1*24*60, # using vital signs and labs 4 days prior to a culture 
-                                  output_time_len=1*24*60, # predict one time unit into the future
+bsi_stream.engineer.DefineEpisode(input_time_len=2*24*60, # using vital signs and labs 4 days prior to a culture 
+                                  output_time_len=2*24*60, # predict one time unit into the future
                                   time_resolution=60, # aggregate minutely data to one row per hour 
                                   time_lag=0,  # no time lag between predictors and response
-                                  anchor_gap=4*24*60) # the minimum distance between two episodes
+                                  anchor_gap=5*24*60) # the minimum distance between two episodes
 
                                   # Build MVTS dataframe or tfds  (notice that the engineer now has new attributes)
 bsi_stream.engineer.BuildMVTS(csv_pool_path, 
@@ -40,5 +40,4 @@ bsi_stream.engineer.BuildMVTS(csv_pool_path,
                               impute_input='median', # imputation on predictors
                               impute_output='median',
                               sep="_",
-                              return_episode=True,
-                              keep_uid=["uva_5821","uvanewnbc_31632"])# imputation on response (no need in BSI project)
+                              return_episode=True)# imputation on response (no need in BSI project)
