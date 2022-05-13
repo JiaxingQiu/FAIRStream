@@ -1,6 +1,6 @@
 import pandas as pd
 
-def create_csv_pool(csv_source_dict, variable_dict, csv_pool_dir, source_key=None, file_key=None, sep = '---'):
+def create_csv_pool(csv_source_dict, variable_dict, csv_pool_dir, source_key=None, file_key=None, sep = '---', skip_first_col=False):
     
     if source_key is None and file_key is None: # create csv pool for all source files
         for source_key in csv_source_dict.keys():
@@ -11,7 +11,10 @@ def create_csv_pool(csv_source_dict, variable_dict, csv_pool_dir, source_key=Non
                 if not include: # skip source file not to include
                     print("--- Skip file : "+str(source_key) +" --- "+ str(file_key) + ". To include, set 'input'=True in csv_source_dict.json ")
                     continue
-                all_src_names = pd.read_csv(path, index_col=0, nrows=0).columns.tolist()# only read colume names to check keys
+                if skip_first_col: 
+                    all_src_names = pd.read_csv(path, index_col=0, nrows=0).columns.tolist()# only read colume names to check keys
+                else:
+                    all_src_names = pd.read_csv(path, nrows=0).columns.tolist()# only read colume names to check keys
                 __uid_src_names = variable_dict['__uid']['src_names']
                 __uid_src_name = list(set(all_src_names).intersection(set(__uid_src_names)))
                 if len(__uid_src_name) != 1:
@@ -30,7 +33,10 @@ def create_csv_pool(csv_source_dict, variable_dict, csv_pool_dir, source_key=Non
         if not include: # skip source file not to include
             print("--- Skip : "+str(source_key) +" --- "+ str(file_key) + ". To include, set 'input'=True in csv_source_dict.json ")
             return
-        all_src_names = pd.read_csv(path, index_col=0, nrows=0).columns.tolist()# only read colume names to check keys
+        if skip_first_col: 
+            all_src_names = pd.read_csv(path, index_col=0, nrows=0).columns.tolist()# only read colume names to check keys
+        else:
+            all_src_names = pd.read_csv(path, nrows=0).columns.tolist()# only read colume names to check keys
         __uid_src_names = variable_dict['__uid']['src_names']
         __uid_src_name = list(set(all_src_names).intersection(set(__uid_src_names)))
         if len(__uid_src_name) != 1:
