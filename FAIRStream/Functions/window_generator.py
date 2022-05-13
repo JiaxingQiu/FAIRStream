@@ -55,7 +55,12 @@ class WindowGenerator():
         return inputs, labels
     
     def make_dataset(self, batch_size):
+       
         data = np.array(self.df, dtype=np.float32)
+        if data.shape[0] <= self.stride:
+            nrow2pad = self.stride - data.shape[0] + 1
+            data = np.append(data,np.zeros(shape=[nrow2pad,data.shape[1]]),0)
+
         ds = tf.keras.preprocessing.timeseries_dataset_from_array(
             data=data,
             targets=None,

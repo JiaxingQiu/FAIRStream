@@ -141,13 +141,15 @@ def make_episodes_ts(df_sbjs_ts, variable_dict, input_time_len, output_time_len,
                 # key var name in the dictionary
                 var_dict = var.split('___')[0]
                 # filter out invalid input / output variables
-                if 'input' in list(variable_dict[var_dict].keys()):
-                    if not variable_dict[var_dict]['input']:
-                        continue
-                elif 'output' in list(variable_dict[var_dict].keys()):
-                    if not variable_dict[var_dict]['output']:
-                        continue
-                else:
+                # if 'input' in list(variable_dict[var_dict].keys()):
+                #     if not variable_dict[var_dict]['input']:
+                #         continue
+                # elif 'output' in list(variable_dict[var_dict].keys()):
+                #     if not variable_dict[var_dict]['output']:
+                #         continue
+                # else:
+                #     continue
+                if ('input' not in list(variable_dict[var_dict].keys())) and ('output' not in list(variable_dict[var_dict].keys())):
                     continue
                 
                 # imputation for unique per sbj variables
@@ -157,26 +159,38 @@ def make_episodes_ts(df_sbjs_ts, variable_dict, input_time_len, output_time_len,
                     else:
                         df_sbj_ep_ts[var] = df_sbj_ts.loc[df_sbj_ts[var].first_valid_index(), var]
 
-                # imputation for factor variables
+                # imputation / one-hot fulfill factor variables
                 if 'factor' in list(variable_dict[var_dict].keys()):
-                    # factor variable wihtin one episode should be constantly unique
-                    #df_sbj_ep_ts[var] = df_sbj_ep_ts.loc[df_sbj_ep_ts[var].first_valid_index(), var]
-                    orders = list(variable_dict[var_dict]['factor']['levels'].keys())[::-1]# reversed order, severity from high to low
-                    while len(orders)>0:
-                        top_col = str(var_dict)+'___'+str(orders[0])# current highest order column name
-                        orders.pop(0)# left lower levels 
-                        if len(orders)==0:
-                            lower_cols=[]
-                        else:
-                            lower_cols = [str(var_dict)+'___'+str(o) for o in orders]
+                    # reversed order, severity from high to low
+                    orders = list(variable_dict[var_dict]['factor']['levels'].keys())[::-1]
+                    # level columns from this factor variable
+                    level_cols = [str(var_dict)+'___'+str(o) for o in orders] 
+                    # level indicator tag for current episode
+                    level_tags = [any(df_sbj_ep_ts[level_col]==1) for level_col in level_cols]
+                    # find the correct highest true level for current episode
+                    top_col = list(np.array(level_cols)[np.array(level_tags)])[0]
+                    other_cols = level_cols
+                    other_cols.remove(top_col)
+                    # assign 1 to the correct of current episode
+                    df_sbj_ep_ts[top_col]=1.0
+                    # assign 0 to the rest columns of other levels for current episode
+                    df_sbj_ep_ts[other_cols]=0.0
+                    # while len(orders)>0:
+                    #     top_col = str(var_dict)+'___'+str(orders[0])# current highest order column name
+                    #     orders.pop(0)# left lower levels 
+                    #     if len(orders)==0:
+                    #         lower_cols=[]
+                    #     else:
+                    #         lower_cols = [str(var_dict)+'___'+str(o) for o in orders]
 
-                        if any(df_sbj_ep_ts[top_col]==1):
-                        # fix lower levels columns if possible (is sample size is small, all episodes from all subjects might only have one level)
-                            df_sbj_ep_ts[top_col]=1.0
-                            if len(lower_cols)>0:
-                                df_sbj_ep_ts[lower_cols]=0.0
-                        else:
-                            df_sbj_ep_ts[top_col]=0.0
+                    #     if any(df_sbj_ep_ts[top_col]==1):
+                    #     # fix lower levels columns if possible (is sample size is small, all episodes from all subjects might only have one level)
+                    #         df_sbj_ep_ts[top_col]=1.0
+                    #         if len(lower_cols)>0:
+                    #             df_sbj_ep_ts[lower_cols]=0.0
+                    #     else:
+                    #         df_sbj_ep_ts[top_col]=0.0
+                    
 
 
                 # imputation for numeric variables

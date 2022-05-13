@@ -40,7 +40,8 @@ bsi_stream.engineer.BuildMVTS(csv_pool_path,
                               impute_input='median', # imputation on predictors
                               impute_output='median',
                               sep="_",
-                              return_episode=True)# imputation on response (no need in BSI project)
+                              return_episode=True,
+                              keep_uid=['uvaold_10779541'])# imputation on response (no need in BSI project)
 
 
 

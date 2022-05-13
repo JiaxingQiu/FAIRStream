@@ -29,9 +29,14 @@ def cohort_fillna(refer_df, df, vars, method=None, fill_value=-333, viz=False):
     
     refer_df[vars] = refer_df[vars].replace([np.inf, -np.inf], np.nan, inplace=False)
     df[vars] = df[vars].replace([np.inf, -np.inf], np.nan, inplace=False)
-    imputer.fit(refer_df[vars])
+    
     df_imputed = df.copy() 
-    df_imputed[vars] = imputer.transform(df[vars])
+    try:
+        imputer.fit(refer_df[vars])
+        df_imputed[vars] = imputer.transform(df[vars])
+    except:
+        print("Imputation failed, sample size might be too small.")
+        pass
     
 
     if viz:

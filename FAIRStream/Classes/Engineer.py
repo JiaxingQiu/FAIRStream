@@ -26,6 +26,8 @@ class Engineer(Goblin):
         self.read_variable_dict()
         self.input_vars = None
         self.output_vars = None
+        self.input_vars_byside = None
+        self.output_vars_byside = None
         self.episode = None
         self.sample_info = None
         self.mvts_df = None
@@ -103,23 +105,33 @@ class Engineer(Goblin):
         
         if self.mvts_df is not None:
             output_vars = []
+            output_vars_byside = [] # variables that have "output:false", they are engineered but not included in final ML matrices
             for var_dict in self.variable_dict.keys():
                 if 'output' in self.variable_dict[var_dict].keys():
                     if self.variable_dict[var_dict]['output']:
                         output_vars = output_vars + list(self.mvts_df.columns[self.mvts_df.columns.str.startswith(str(var_dict))])
+                    else:
+                        output_vars_byside = output_vars_byside + list(self.mvts_df.columns[self.mvts_df.columns.str.startswith(str(var_dict))])
             assert len(output_vars)>0, 'Engineer couldn\'t find output columns corresponding to the variable dictionary'
             input_vars = []
+            input_vars_byside = [] # variables that have "input:false", they are engineered but not included in final ML matrices
             for var_dict in self.variable_dict.keys():
                 if 'input' in self.variable_dict[var_dict].keys():
                     if self.variable_dict[var_dict]['input']:
                         input_vars = input_vars + list(self.mvts_df.columns[self.mvts_df.columns.str.startswith(str(var_dict))])
+                    else:
+                        input_vars_byside = input_vars_byside + list(self.mvts_df.columns[self.mvts_df.columns.str.startswith(str(var_dict))])
             assert len(input_vars)>0, 'Engineer couldn\'t find input columns corresponding to the variable dictionary'
             self.input_vars = input_vars
             self.output_vars = output_vars
+            self.input_vars_byside = input_vars_byside
+            self.output_vars_byside = output_vars_byside
+            
             # coordinate column name orders
-            base_vars = list(self.mvts_df.columns[~self.mvts_df.columns.isin(self.input_vars+self.output_vars)])
-            self.mvts_df = self.mvts_df[self.input_vars+self.output_vars+base_vars] # mvts_df is not imputed
-            print("Success! Engineer has updated attributes --- mvts_df, input_vars, output_vars. ")
+            base_vars = list(self.mvts_df.columns[~self.mvts_df.columns.isin(self.input_vars+self.output_vars+self.input_vars_byside+self.output_vars_byside)])
+            self.mvts_df = self.mvts_df[self.input_vars+self.output_vars+self.input_vars_byside+self.output_vars_byside+base_vars] # mvts_df is not imputed
+            #self.mvts_df_byside = self.mvts_df[self.input_vars_byside+self.output_vars_byside+base_vars]
+            print("Success! Engineer has updated attributes --- mvts_df, input_vars, output_vars, input_vars_byside, output_vars_byside. ")
 
      
        
@@ -138,19 +150,21 @@ class Engineer(Goblin):
         train_frac = 1-valid_frac-test_frac
         assert train_frac>0 and train_frac<=1, "train set fraction must be >0 and <=1, please input legit valid_frac and/or test_frac"
         
-        train_list = all_list[0:int(train_frac*len(all_list))]
+        train_list = all_list[0:int(np.round(train_frac*len(all_list)))]
         self.train_df = self.mvts_df[self.mvts_df['split_id'].isin(train_list)]
         self.train_df = self.train_df.drop(columns=['split_id'])
         
         if valid_frac > 0:
-            valid_list = all_list[int(train_frac*len(all_list)):int((train_frac+valid_frac)*len(all_list))]
-            self.valid_df = self.mvts_df[self.mvts_df['split_id'].isin(valid_list)]
-            self.valid_df = self.valid_df.drop(columns=['split_id'])
+            if int(np.round(train_frac*len(all_list))) < len(all_list):
+                valid_list = all_list[int(np.round(train_frac*len(all_list))):int(np.round((train_frac+valid_frac)*len(all_list)))]
+                self.valid_df = self.mvts_df[self.mvts_df['split_id'].isin(valid_list)]
+                self.valid_df = self.valid_df.drop(columns=['split_id'])
 
         if test_frac > 0:
-            test_list = all_list[int((train_frac+valid_frac)*len(all_list)):int(len(all_list))]
-            self.test_df = self.mvts_df[self.mvts_df['split_id'].isin(test_list)]
-            self.test_df = self.test_df.drop(columns=['split_id'])
+            if int(np.round((train_frac+valid_frac)*len(all_list))) < len(all_list): 
+                test_list = all_list[int((train_frac+valid_frac)*len(all_list)):int(len(all_list))]
+                self.test_df = self.mvts_df[self.mvts_df['split_id'].isin(test_list)]
+                self.test_df = self.test_df.drop(columns=['split_id'])
         print("Success! Engineer has updated attributes --- train_df, valid_df and test_df. ")
     
     def cohort_fillna(self, impute_input=None, impute_output=None, fill_value=-333, viz=True):
@@ -188,11 +202,14 @@ class Engineer(Goblin):
             self.cohort_fillna(impute_input=impute_input, impute_output=impute_output, fill_value=fill_value, viz=viz)
             
             if self.train_df_imputed is not None:
-                self.train_tfds = make_mvts_tfds_from_df(self.train_df_imputed, input_vars=self.input_vars, output_vars=self.output_vars, input_time_len=self.episode.input_time_len, output_time_len=self.episode.output_time_len, time_resolution=self.episode.time_resolution, time_lag=self.episode.time_lag, batch_size=batch_size)
+                if self.train_df_imputed.shape[0]>0:
+                    self.train_tfds = make_mvts_tfds_from_df(self.train_df_imputed, input_vars=self.input_vars, output_vars=self.output_vars, input_time_len=self.episode.input_time_len, output_time_len=self.episode.output_time_len, time_resolution=self.episode.time_resolution, time_lag=self.episode.time_lag, batch_size=batch_size)
             if self.valid_df_imputed is not None:
-                self.valid_tfds = make_mvts_tfds_from_df(self.valid_df_imputed, input_vars=self.input_vars, output_vars=self.output_vars, input_time_len=self.episode.input_time_len, output_time_len=self.episode.output_time_len, time_resolution=self.episode.time_resolution, time_lag=self.episode.time_lag, batch_size=batch_size)
+                if self.valid_df_imputed.shape[0]>0:
+                    self.valid_tfds = make_mvts_tfds_from_df(self.valid_df_imputed, input_vars=self.input_vars, output_vars=self.output_vars, input_time_len=self.episode.input_time_len, output_time_len=self.episode.output_time_len, time_resolution=self.episode.time_resolution, time_lag=self.episode.time_lag, batch_size=batch_size)
             if self.test_df_imputed is not None:
-                self.test_tfds = make_mvts_tfds_from_df(self.test_df_imputed, input_vars=self.input_vars, output_vars=self.output_vars, input_time_len=self.episode.input_time_len, output_time_len=self.episode.output_time_len, time_resolution=self.episode.time_resolution, time_lag=self.episode.time_lag, batch_size=batch_size)
+                if self.test_df_imputed.shape[0]>0:
+                    self.test_tfds = make_mvts_tfds_from_df(self.test_df_imputed, input_vars=self.input_vars, output_vars=self.output_vars, input_time_len=self.episode.input_time_len, output_time_len=self.episode.output_time_len, time_resolution=self.episode.time_resolution, time_lag=self.episode.time_lag, batch_size=batch_size)
             
             self.hist = {'episode': self.episode.__dict__,
                         'split': {

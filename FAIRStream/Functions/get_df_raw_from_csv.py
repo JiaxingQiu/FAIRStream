@@ -24,11 +24,16 @@ def get_df_raw_from_csv(variable_dict, df_sample_info, source_key, file_key, viz
         if var.startswith('__'):
             colnames_dict = colnames_dict + variable_dict[var]['src_names']
         elif 'input' in variable_dict[var].keys():
-            if variable_dict[var]['input']:
+            if variable_dict[var]['input']: # if input: true, the variable is the ML predictor, will be kept in both df and tfds
+                colnames_dict = colnames_dict + variable_dict[var]['src_names']
+            else: # if input: false, the variable is not the ML predictor, but should be engineered and kept in df
                 colnames_dict = colnames_dict + variable_dict[var]['src_names']
         elif 'output' in variable_dict[var].keys():
-            if variable_dict[var]['output']:
+            if variable_dict[var]['output']: # if output: true, the variable is the ML response, will be kept in both df and tfds
                 colnames_dict = colnames_dict + variable_dict[var]['src_names']
+            else: # if output: false, the variable is not the ML response, but should be engineered and kept in df
+                colnames_dict = colnames_dict + variable_dict[var]['src_names']
+            
     
    # loop through all subjects csvs of this file key
     for fullname in list(df_sample_info.loc[np.array(df_sample_info['source_key']==source_key) & np.array(df_sample_info["file_key"]==file_key), 'fullname']):
