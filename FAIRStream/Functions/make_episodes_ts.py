@@ -31,7 +31,7 @@ def make_episodes_ts(df_sbjs_ts, variable_dict, input_time_len, output_time_len,
     # prepare variables
     outvars=[]
     unique_vars=[]
-    for var in df_sbjs_ts.columns[~df_sbjs_ts.columns.isin(['__uid','__anchor','__time_bin'])]:
+    for var in df_sbjs_ts.columns[~df_sbjs_ts.columns.isin(['__uid','__anchor','__time_bin','__time'])]:
         # get variable name in dictionary
         var_dict = var.split('___')[0]
         # find all output variables
@@ -60,11 +60,11 @@ def make_episodes_ts(df_sbjs_ts, variable_dict, input_time_len, output_time_len,
                 df_sbj_ts[var] = df_sbj_ts.loc[df_sbj_ts[var].first_valid_index(), var]
         
         # get anchor columns
-        df_sbj_output_times = df_sbj_ts[['__anchor','__time_bin']].reset_index(drop = True)
+        df_sbj_output_times = df_sbj_ts[['__anchor','__time_bin', '__time']].reset_index(drop = True)
                 
         if 'factor' in variable_dict['__anchor'].keys():
             # locate anchors
-            df_sbj_output_times = df_sbj_output_times.loc[df_sbj_output_times.__anchor.isin(list(variable_dict['__anchor']['factor']['levels'].keys())),['__anchor','__time_bin']].reset_index(drop = True)
+            df_sbj_output_times = df_sbj_output_times.loc[df_sbj_output_times.__anchor.isin(list(variable_dict['__anchor']['factor']['levels'].keys())),['__anchor','__time_bin', '__time']].reset_index(drop = True)
             
             # select anchors based on order of levels in dictionary (e.g. severity)
             orders = list(variable_dict['__anchor']['factor']['levels'].keys())[::-1]# reversed order, severity from high to low
@@ -96,6 +96,7 @@ def make_episodes_ts(df_sbjs_ts, variable_dict, input_time_len, output_time_len,
             # current anchor and absolute time bin value
             ep_anchor = df_sbj_output_times.__anchor[ep_order]
             ep_abs_time = df_sbj_output_times.__time_bin[ep_order]
+            ep_raw_time = df_sbj_output_times.__time[ep_order]
 
             # for the sake of forward and backward imputation, expand current episode by twice the input ahead and twice the output after
             # relative time sequence in an episode (relative to time 0)
@@ -131,6 +132,7 @@ def make_episodes_ts(df_sbjs_ts, variable_dict, input_time_len, output_time_len,
             df_sbj_ep_ts['__ep_relative_time'] = df_sbj_ep_ts['__ep_relative_time'] * time_resolution
             df_sbj_ep_ts['__ep_order'] = ep_order + 1
             df_sbj_ep_ts['__anchor'] = ep_anchor
+            df_sbj_ep_ts['__time'] = ep_raw_time
 
 
             # build up input / output (predictor / responce) variables
@@ -218,4 +220,6 @@ def make_episodes_ts(df_sbjs_ts, variable_dict, input_time_len, output_time_len,
     # exclude levels that are not in dictionary for factor output 
     #[var for var in variable_dict.keys() if 'output' in variable_dict[var].keys()]
 
+    #remove __time_bin column
+    df_sbjs_eps_ts = df_sbjs_eps_ts.loc[:, df_sbjs_eps_ts.columns != '__time_bin']
     return df_sbjs_eps_ts

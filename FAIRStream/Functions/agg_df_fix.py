@@ -13,8 +13,14 @@ def agg_df_fix(variable_dict, df_fix, time_resolution):
     if '__time' in df_fix.columns:
         df_fix['__time_bin'] = df_fix['__time']//time_resolution#*time_resolution# bin fixed df by time resolution
         keys = ['__uid','__time_bin']
+        tim_var = ['__time']
     else:
         keys = ['__uid']
+
+    if len(tim_var)==0:
+        df_tim_agg = df_fix[keys].drop_duplicates()
+    else:
+        df_tim_agg = df_fix.groupby(keys)[tim_var].agg('min').reset_index()
 
     if len(num_vars)==0: # aggregate numeric vars by taking the mean
         df_num_agg = df_fix[keys].drop_duplicates()
@@ -39,6 +45,7 @@ def agg_df_fix(variable_dict, df_fix, time_resolution):
             df_fct_agg[cl] = 0.0
 
     df_agg = pd.merge(left=df_num_agg,right=df_fct_agg,on=keys,copy = False)# merge columns together
+    df_agg = pd.merge(left=df_agg,right=df_tim_agg,on=keys,copy = False)# merge columns together
     
     return df_agg
 

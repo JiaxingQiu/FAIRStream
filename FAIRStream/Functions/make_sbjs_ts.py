@@ -60,12 +60,12 @@ def make_sbjs_ts(df_sample_info, variable_dict, time_resolution, viz=False, dumm
     fct_vars = [var for var in variable_dict.keys() if "factor" in variable_dict[var].keys()]
 
     for var in fct_vars:
-        if "input" in list(variable_dict[var].keys()):
-            if not variable_dict[var]['input']: 
-                continue
-        if "output" in list(variable_dict[var].keys()):
-            if not variable_dict[var]['output']: 
-                continue
+        # if "input" in list(variable_dict[var].keys()):
+        #     if not variable_dict[var]['input']: 
+        #         continue
+        # if "output" in list(variable_dict[var].keys()):
+        #     if not variable_dict[var]['output']: 
+        #         continue
         # get the nan level name from dictionary and make the col name
         nan_colname = str(var) +"___"+ str(variable_dict[var]['factor']['impute_per_sbj']['nan_level'])
         #  if nan level is set to be merged into any level of the factor variable (e.g. nan is count as level 0)
