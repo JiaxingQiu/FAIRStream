@@ -235,13 +235,13 @@ class Engineer(Goblin):
                                 'x': [example_inputs.shape for example_inputs, example_labels in self.train_tfds.take(1)],
                                 'y': [example_labels.shape for example_inputs, example_labels in self.train_tfds.take(1)]
                             }
-                        },
-                        'sampling':{
-                            'sample_size':[self.sample_info.split(sep='---')[0]],
-                            'cohort_size':[self.sample_info.split(sep='---')[2]],
-                            'csv_pool_size':[self.sample_info.split(sep='---')[4]],
-                            'with_replacement':replace
-                        }
+                        }#,
+                        # 'sampling':{
+                        #     'sample_size':[self.sample_info.split(sep='---')[0]],
+                        #     'cohort_size':[self.sample_info.split(sep='---')[2]],
+                        #     'csv_pool_size':[self.sample_info.split(sep='---')[4]],
+                        #     'with_replacement':replace
+                        # }
                         }
             print("Success! Engineer has updated attributes --- train_tfds, valid_tfds and test_tfds. ")
         
