@@ -1,13 +1,20 @@
 
+import pandas as pd
 from Functions.make_sample_info_from_csv import *
 from Functions.make_sbjs_ts import *
 from Functions.make_episodes_ts import *
 from Functions.viz_episode_ts import *
 
-def make_mvts_df_from_csv_pool(df_csv_fullname_ls, nsbj, frac, source_dict, variable_dict, input_time_len, output_time_len, time_resolution, time_lag, anchor_gap, topn_eps=None, stratify_by=None, viz=False, viz_ts=False, dummy_na=False, return_episode=True, skip_uid=None, keep_uid=None):
+def make_mvts_df_from_csv_pool(df_csv_fullname_ls, nsbj, frac, source_dict, variable_dict, input_time_len, output_time_len, time_resolution, time_lag, anchor_gap, topn_eps=None, stratify_by=None, viz=False, viz_ts=False, dummy_na=False, return_episode=True, skip_uid=None, keep_uid=None, df_raw=None):
     
-    df_sample_info, df_csv_fullname_ls_updated, msg = make_sample_info_from_csv(df_file_dict=df_csv_fullname_ls, source_dict=source_dict, variable_dict=variable_dict, nsbj=nsbj, frac=frac, stratify_by=stratify_by, skip_uid=skip_uid, keep_uid=keep_uid)
-    df_sbjs_ts = make_sbjs_ts(df_sample_info, variable_dict, time_resolution, viz=viz, dummy_na=dummy_na) # patient subset dataframe table
+    if df_raw is None:
+        df_sample_info, df_csv_fullname_ls_updated, msg = make_sample_info_from_csv(df_file_dict=df_csv_fullname_ls, source_dict=source_dict, variable_dict=variable_dict, nsbj=nsbj, frac=frac, stratify_by=stratify_by, skip_uid=skip_uid, keep_uid=keep_uid)
+    else:
+        df_sample_info = pd.DataFrame({"filename":["NA"], "fullname":["NA"], "source_key":["external"], "file_key":["df_raw"], "id":["NA"], "__uid":["NA"], "already_sampled":[0]})
+        df_csv_fullname_ls_updated = pd.DataFrame({"filename":["NA"], "fullname":["NA"], "source_key":["external"], "file_key":["df_raw"], "id":["NA"], "__uid":["NA"], "already_sampled":[1]})
+        msg = "using external df_raw instead!"
+
+    df_sbjs_ts = make_sbjs_ts(df_sample_info, variable_dict, time_resolution, viz=viz, dummy_na=dummy_na, df_raw=df_raw) # patient subset dataframe table
          
     if viz:
         fig_title = "Visualize Cleaned DataFrame"

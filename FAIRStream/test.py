@@ -31,6 +31,19 @@ bsi_stream.engineer.DefineEpisode(input_time_len=2*24*60, # using vital signs an
                                   anchor_gap=5*24*60) # the minimum distance between two episodes
 
                                   # Build MVTS dataframe or tfds  (notice that the engineer now has new attributes)
+# bsi_stream.engineer.BuildMVTS(csv_pool_path, 
+#                               nsbj = 50, # number of subjects / patients to sample from the pool 
+#                               replace=True, # sample with replacement or not 
+#                               valid_frac = 0.2, # fraction of number of subjects in validation dataset
+#                               test_frac = 0.1, # fraction of number of subjects in left-out test dataset
+#                               batch_size = 64, # batch size (usually 32,64,128..)
+#                               impute_input='median', # imputation on predictors
+#                               impute_output='median',
+#                               sep="_",
+#                               return_episode=True,
+#                               keep_uid=['uvaold_10779541'])# imputation on response (no need in BSI project)
+
+df_external = pd.read_csv("/Users/jiaxingqiu/Documents/CAMA_projects/BSI/2016_2021/data_ml/bsi_new_deidentified_bc.csv", nrows=5000)
 bsi_stream.engineer.BuildMVTS(csv_pool_path, 
                               nsbj = 50, # number of subjects / patients to sample from the pool 
                               replace=True, # sample with replacement or not 
@@ -41,7 +54,7 @@ bsi_stream.engineer.BuildMVTS(csv_pool_path,
                               impute_output='median',
                               sep="_",
                               return_episode=True,
-                              keep_uid=['uvaold_10779541'])# imputation on response (no need in BSI project)
+                              df_raw=df_external)# imputation on response (no need in BSI project)
 
 
 

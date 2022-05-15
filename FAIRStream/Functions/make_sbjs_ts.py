@@ -4,7 +4,7 @@ from Functions.fix_df_raw import *
 from Functions.agg_df_fix import *
 
 
-def make_sbjs_ts(df_sample_info, variable_dict, time_resolution, viz=False, dummy_na=False):
+def make_sbjs_ts(df_sample_info, variable_dict, time_resolution, viz=False, dummy_na=False, df_raw=None):
     
     df_sbjs_ts = pd.DataFrame()
     
@@ -16,7 +16,7 @@ def make_sbjs_ts(df_sample_info, variable_dict, time_resolution, viz=False, dumm
         for file_key in list(df_sample_info['file_key'].unique()):
 
             # get stacked raw df (cohort-wise)
-            df_raw = get_df_raw_from_csv(variable_dict, df_sample_info, source_key, file_key, viz=viz)
+            df_raw = get_df_raw_from_csv(variable_dict, df_sample_info, source_key, file_key, viz=viz, df_raw=df_raw)
 
             # fix current raw file (cohort-wise)
             df_fix = fix_df_raw(variable_dict, df_raw, source_key)
