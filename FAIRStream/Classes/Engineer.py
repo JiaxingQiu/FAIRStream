@@ -100,6 +100,8 @@ class Engineer(Goblin):
             self.df_csv_fullname_ls = init_csv_fullname_ls(csv_pool_dir, sep=sep)
         else:
             print("Engineer is sampling without replacement --- ")
+        if df_raw is not None:
+            print("Just kidding :) Engineer is using external tabular data you input!")
         
         self.mvts_df, self.df_csv_fullname_ls, self.sample_info, self.sbj_df = make_mvts_df_from_csv_pool(self.df_csv_fullname_ls, nsbj, frac, self.csv_source_dict, self.variable_dict, episode.input_time_len, episode.output_time_len, episode.time_resolution, episode.time_lag, episode.anchor_gap, stratify_by=stratify_by, viz=viz, viz_ts=viz_ts, dummy_na=dummy_na, topn_eps=topn_eps, return_episode=return_episode, skip_uid=skip_uid, keep_uid=keep_uid, df_raw=df_raw)
         

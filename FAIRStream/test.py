@@ -43,7 +43,8 @@ bsi_stream.engineer.DefineEpisode(input_time_len=2*24*60, # using vital signs an
 #                               return_episode=True,
 #                               keep_uid=['uvaold_10779541'])# imputation on response (no need in BSI project)
 
-df_external = pd.read_csv("/Users/jiaxingqiu/Documents/CAMA_projects/BSI/2016_2021/data_ml/bsi_new_deidentified_bc.csv", nrows=5000)
+#df_external = pd.read_csv("/Users/jiaxingqiu/Documents/CAMA_projects/BSI/2016_2021/data_ml/bsi_new_deidentified_bc.csv", nrows=500)
+df_nbc = pd.read_csv("/Users/jiaxingqiu/Documents/CAMA_projects/BSI/2016_2021/data_ml/bsi_new_deidentified_nbc.csv", nrows=118644)
 bsi_stream.engineer.BuildMVTS(csv_pool_path, 
                               nsbj = 50, # number of subjects / patients to sample from the pool 
                               replace=True, # sample with replacement or not 
@@ -54,7 +55,7 @@ bsi_stream.engineer.BuildMVTS(csv_pool_path,
                               impute_output='median',
                               sep="_",
                               return_episode=True,
-                              df_raw=df_external)# imputation on response (no need in BSI project)
+                              df_raw=df_nbc)# imputation on response (no need in BSI project)
 
 
 

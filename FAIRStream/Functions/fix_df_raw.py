@@ -22,7 +22,14 @@ def fix_df_raw(variable_dict, df_raw, source_key):
         df_fix = fixed dataframe
 
     """
-
+    # replace infinite valuesaby nan
+    df_raw[~np.isfinite(df_raw)] = np.nan
+    # remove rows that have not finite values in __time or __uid
+    tim_col = list(set(variable_dict['__time']['src_names'])&set(df_raw.columns))
+    df_raw = df_raw.loc[np.array(~df_raw[tim_col].isin([np.nan,np.inf,-np.inf]))[:,0],:]
+    id_col = list(set(variable_dict['__uid']['src_names'])&set(df_raw.columns))
+    df_raw = df_raw.loc[np.array(~df_raw[id_col].isin([np.nan,np.inf,-np.inf]))[:,0],:]
+    
     include_vars = []
     for var in variable_dict.keys():
         if len(set(variable_dict[var]['src_names']).intersection(set(df_raw.columns.to_list())))==0: # skip variable if not in current dataframe
