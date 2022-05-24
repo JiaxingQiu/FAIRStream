@@ -229,18 +229,14 @@ def make_episodes_ts(df_sbjs_ts, variable_dict, input_time_len, output_time_len,
     # shuffle anchor level per episode if required
     level2shuffle = list(variable_dict['__anchor']['shuffle'])
     df2shuffle = df_sbjs_eps_ts.loc[df_sbjs_eps_ts.__anchor.isin(level2shuffle),:].reset_index(drop=True).copy()
+    # only need to shuffle the relative time within group
     if df2shuffle.shape[0]>0:
         print('--- shuffle [ ' + ' & '.join(level2shuffle) + ' ] episodes ---')
         raw_columns = df2shuffle.columns
         df2shuffle['ep_id'] = df2shuffle['__uid'].astype(str)+'_'+df2shuffle['__ep_order'].astype(str)+'_'+df2shuffle['__anchor'].astype(str)
-        df2shuffle_invars = df2shuffle.loc[:,['ep_id']+invars]
-        df2shuffle_invars = df2shuffle_invars.groupby(['ep_id'], group_keys=False)[invars].apply(lambda df: df.sample(frac=1,replace=True)).reset_index(drop=False)
-        df2shuffle_invars = df2shuffle_invars.loc[:,['ep_id']+invars]
-        df2shuffle_invars = df2shuffle_invars.sort_values(by=['ep_id'])
-        df2shuffle_rest = df2shuffle.loc[:,list(set(df2shuffle.columns)-set(invars))]
-        df2shuffle_rest = df2shuffle_rest.sort_values(by=['ep_id'])
-        df2shuffle_rest = df2shuffle_rest.loc[:,list(set(df2shuffle.columns)-set(df2shuffle_invars.columns))]
-        df2shuffle_final = pd.concat([df2shuffle_invars, df2shuffle_rest],axis=1)
+        df2shuffle["__ep_relative_time_org"] = df2shuffle.__ep_relative_time 
+        df2shuffle["__ep_relative_time"] = df2shuffle.groupby("ep_id")["__ep_relative_time"].transform(np.random.permutation)
+        df2shuffle_final = df2shuffle.groupby("ep_id").apply(lambda x: x.sort_values(by='__ep_relative_time',ascending=True)).reset_index(drop=True)
         df2shuffle_final = df2shuffle_final.loc[:,raw_columns]
         df2keep = df_sbjs_eps_ts.loc[~df_sbjs_eps_ts.__anchor.isin(level2shuffle),raw_columns]
         df_sbjs_eps_ts = pd.concat([df2shuffle_final,df2keep],axis=0)

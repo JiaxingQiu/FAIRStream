@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MaxAbsScaler
@@ -22,8 +23,7 @@ def fix_df_raw(variable_dict, df_raw, source_key):
         df_fix = fixed dataframe
 
     """
-    # replace infinite valuesaby nan
-    df_raw[~np.isfinite(df_raw)] = np.nan
+    
     # remove rows that have not finite values in __time or __uid
     tim_col = list(set(variable_dict['__time']['src_names'])&set(df_raw.columns))
     df_raw = df_raw.loc[np.array(~df_raw[tim_col].isin([np.nan,np.inf,-np.inf]))[:,0],:]
@@ -36,7 +36,6 @@ def fix_df_raw(variable_dict, df_raw, source_key):
             continue
         include_vars.append(var) # append to list of all variables to include
         
-        
         # --- fix variable name ---
         src_name = df_raw.columns[df_raw.columns.isin(variable_dict[var]['src_names'])][0]
         if var == '__anchor':
@@ -44,7 +43,12 @@ def fix_df_raw(variable_dict, df_raw, source_key):
         else:
             df_raw.rename(columns={src_name:var}, inplace=True)
               
-    
+        # replace infinite values with nan
+        try:
+            df_raw.loc[~np.isfinite(df_raw[var]),var] = np.nan
+        except:
+            pass
+        
         # --- fix __uid ---
         if var == '__uid':
             df_raw = df_raw.astype({var:'str'}) 
@@ -134,24 +138,40 @@ def fix_df_raw(variable_dict, df_raw, source_key):
             if len(outdict_levels) != 0: # if number of levels exceed nlevel_max_per_sbj, fix factor var's level limit (including y outcome var)
                 print("--- fix out-of-dictionry level/orders " + str(outdict_levels) + " with ['"+str(variable_dict[var]['factor']['impute_per_sbj']['nan_level'])+"']")
                 df_raw.loc[np.array(df_raw[var].isin(outdict_levels)),[var]] = variable_dict[var]['factor']['impute_per_sbj']['nan_level']
-                
-            # fix subject-wise factor attributes
-            for __uid in list(set(df_raw['__uid'])):
-                # # fix invalid levels (levels not in dictionary) by imputation nan
-                # outdict_levels = list(set(df_raw[df_raw['__uid']==__uid][var])-set(variable_dict[var]['factor']['levels'].keys()))
-                # if len(outdict_levels) != 0: # if number of levels exceed nlevel_max_per_sbj, fix factor var's level limit (including y outcome var)
-                #     print("--- fix out-of-dictionry level/orders " + str(outdict_levels) + " with ['"+str(variable_dict[var]['factor']['impute_per_sbj']['nan_level'])+"'] for subject ---" + str(__uid))
-                #     df_raw.loc[np.array(df_raw['__uid']==__uid) & np.array(df_raw[var].isin(outdict_levels)),[var]] = variable_dict[var]['factor']['impute_per_sbj']['nan_level']
+
+            #  there got to be a way to fix factor variables faster
+            if variable_dict[var]['unique_per_sbj']:
+                # add numeric level order 
+                level_list = list(variable_dict[var]['factor']['levels'].keys())
+                level_df = pd.DataFrame({"level_name":level_list, "level_rank":list(range(len(level_list)))})
+                df_raw['level_name'] = df_raw[var]
+                df_raw = df_raw.merge(level_df, left_on = "level_name", right_on="level_name")
+                # calculate highest fector level within cluster
+                max_df = df_raw.groupby(['__uid'])["level_rank"].agg(['max']).reset_index(drop=False)
+                df_raw = df_raw.merge(max_df, left_on = "__uid", right_on="__uid")
+                df_raw = df_raw.loc[:,list(set(df_raw.columns)-set(['level_name','level_rank']))]
+                df_raw = df_raw.merge(level_df, left_on="max", right_on="level_rank")
+                df_raw[var] = df_raw['level_name']
+                df_raw = df_raw.loc[:,list(set(df_raw.columns)-set(['level_name','level_rank','max']))]
+            
+
+            # # fix subject-wise factor attributes
+            # for __uid in list(set(df_raw['__uid'])):
+            #     # # fix invalid levels (levels not in dictionary) by imputation nan
+            #     # outdict_levels = list(set(df_raw[df_raw['__uid']==__uid][var])-set(variable_dict[var]['factor']['levels'].keys()))
+            #     # if len(outdict_levels) != 0: # if number of levels exceed nlevel_max_per_sbj, fix factor var's level limit (including y outcome var)
+            #     #     print("--- fix out-of-dictionry level/orders " + str(outdict_levels) + " with ['"+str(variable_dict[var]['factor']['impute_per_sbj']['nan_level'])+"'] for subject ---" + str(__uid))
+            #     #     df_raw.loc[np.array(df_raw['__uid']==__uid) & np.array(df_raw[var].isin(outdict_levels)),[var]] = variable_dict[var]['factor']['impute_per_sbj']['nan_level']
                     
-                # fix inconsistence 
-                if variable_dict[var]['unique_per_sbj']: # if factor level should be unique per subject (independent of time)
-                    # use highest order in dictionary
-                    level_order = list(variable_dict[var]['factor']['levels'].keys())
-                    level_order.reverse()
-                    level_invar = list(set(df_raw[df_raw['__uid']==__uid][var])&set(level_order))
-                    level_invar.sort(key = lambda l:level_order.index(l))
-                    df_raw.loc[df_raw['__uid']==__uid, [var]] = level_invar[0]
-                    # df_raw.loc[df_raw['__uid']==__uid, [var]] = df_raw[df_raw['__uid']==__uid][var].value_counts().index[0] # first most frequent level
+            #     # fix inconsistence 
+            #     if variable_dict[var]['unique_per_sbj']: # if factor level should be unique per subject (independent of time)
+            #         # use highest order in dictionary
+            #         level_order = list(variable_dict[var]['factor']['levels'].keys())
+            #         level_order.reverse()
+            #         level_invar = list(set(df_raw[df_raw['__uid']==__uid][var])&set(level_order))
+            #         level_invar.sort(key = lambda l:level_order.index(l))
+            #         df_raw.loc[df_raw['__uid']==__uid, [var]] = level_invar[0]
+            #         # df_raw.loc[df_raw['__uid']==__uid, [var]] = df_raw[df_raw['__uid']==__uid][var].value_counts().index[0] # first most frequent level
                 
         print("-- " + str(var) + " fixed")
     

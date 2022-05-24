@@ -28,7 +28,7 @@ bsi_stream.engineer.DefineEpisode(input_time_len=2*24*60, # using vital signs an
                                   output_time_len=2*24*60, # predict one time unit into the future
                                   time_resolution=60, # aggregate minutely data to one row per hour 
                                   time_lag=0,  # no time lag between predictors and response
-                                  anchor_gap=5*24*60) # the minimum distance between two episodes
+                                  anchor_gap=7*24*60) # the minimum distance between two episodes
 
                                   # Build MVTS dataframe or tfds  (notice that the engineer now has new attributes)
 # bsi_stream.engineer.BuildMVTS(csv_pool_path, 
@@ -44,7 +44,13 @@ bsi_stream.engineer.DefineEpisode(input_time_len=2*24*60, # using vital signs an
 #                               keep_uid=['uvaold_10779541'])# imputation on response (no need in BSI project)
 
 #df_external = pd.read_csv("/Users/jiaxingqiu/Documents/CAMA_projects/BSI/2016_2021/data_ml/bsi_new_deidentified_bc.csv", nrows=500)
-df_nbc = pd.read_csv("/Users/jiaxingqiu/Documents/CAMA_projects/BSI/2016_2021/data_ml/bsi_new_deidentified_nbc.csv", nrows=118644)
+# df_nbc1 = pd.read_csv("/Users/jiaxingqiu/Documents/CAMA_projects/BSI/2016_2021/data_ml/bsi_new_deidentified_nbc_test1.csv")
+# df_nbc2 = pd.read_csv("/Users/jiaxingqiu/Documents/CAMA_projects/BSI/2016_2021/data_ml/bsi_new_deidentified_nbc_test2.csv")
+# df_nbc3 = pd.read_csv("/Users/jiaxingqiu/Documents/CAMA_projects/BSI/2016_2021/data_ml/bsi_new_deidentified_nbc_test3.csv")
+# df_nbc4 = pd.read_csv("/Users/jiaxingqiu/Documents/CAMA_projects/BSI/2016_2021/data_ml/bsi_new_deidentified_nbc_test4.csv")
+# df_nbc = pd.concat([df_nbc1, df_nbc2, df_nbc3, df_nbc4],axis=0)
+df_bc = pd.read_csv("/Users/jiaxingqiu/Documents/CAMA_projects/BSI/2016_2021/data_ml/bsi_new_deidentified_bc.csv", nrows=5000)
+
 bsi_stream.engineer.BuildMVTS(csv_pool_path, 
                               nsbj = 50, # number of subjects / patients to sample from the pool 
                               replace=True, # sample with replacement or not 
@@ -55,7 +61,7 @@ bsi_stream.engineer.BuildMVTS(csv_pool_path,
                               impute_output='median',
                               sep="_",
                               return_episode=True,
-                              df_raw=df_nbc)# imputation on response (no need in BSI project)
+                              df_raw=df_bc)# imputation on response (no need in BSI project)
 
 
 
