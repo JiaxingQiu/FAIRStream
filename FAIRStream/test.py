@@ -49,7 +49,7 @@ bsi_stream.engineer.DefineEpisode(input_time_len=2*24*60, # using vital signs an
 # df_nbc3 = pd.read_csv("/Users/jiaxingqiu/Documents/CAMA_projects/BSI/2016_2021/data_ml/bsi_new_deidentified_nbc_test3.csv")
 # df_nbc4 = pd.read_csv("/Users/jiaxingqiu/Documents/CAMA_projects/BSI/2016_2021/data_ml/bsi_new_deidentified_nbc_test4.csv")
 # df_nbc = pd.concat([df_nbc1, df_nbc2, df_nbc3, df_nbc4],axis=0)
-df_bc = pd.read_csv("/Users/jiaxingqiu/Documents/CAMA_projects/BSI/2016_2021/data_ml/bsi_new_deidentified_bc.csv", nrows=5000)
+df_bc = pd.read_csv("/Users/jiaxingqiu/Documents/CAMA_projects/BSI/2016_2021/data_ml/test_case235704.csv")
 
 bsi_stream.engineer.BuildMVTS(csv_pool_path, 
                               nsbj = 50, # number of subjects / patients to sample from the pool 

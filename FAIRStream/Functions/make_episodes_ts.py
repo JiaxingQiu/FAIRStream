@@ -84,9 +84,59 @@ def make_episodes_ts(df_sbjs_ts, variable_dict, input_time_len, output_time_len,
                     override_zone_start = int(upper_anchors.loc[idx,['__time_bin']]-anchor_gap//time_resolution) 
                     override_zone_stop = int(upper_anchors.loc[idx,['__time_bin']]+anchor_gap//time_resolution) 
                     # nan invalid anchors
-                    df_sbj_output_times.loc[np.array(df_sbj_output_times['__time_bin']>override_zone_start)&(np.array(df_sbj_output_times['__time_bin']<override_zone_stop))&(np.array(df_sbj_output_times['__anchor'].isin(list(orders)))), ['__anchor']]=np.nan      
+                    df_sbj_output_times.loc[np.array(df_sbj_output_times['__time_bin']>override_zone_start)&(np.array(df_sbj_output_times['__time_bin']<override_zone_stop))&(np.array(df_sbj_output_times['__anchor'].isin(list(orders)))), ['__anchor']]=np.nan 
+            
+            # get not na anchors
+            df_sbj_output_times = df_sbj_output_times[~df_sbj_output_times['__anchor'].isna()].reset_index(drop=True)
+            
+            # adjust anchors who have higher levels of anchor(s) within their episode range
+            for ep_order in list(df_sbj_output_times.index):
+                # check maximum limits of episodes from a single subject
+                if topn_eps is not None and int(topn_eps)>0:
+                    if ep_order+1 >= int(topn_eps):
+                        break # break inner loop
+
+                # current anchor and absolute time bin value
+                ep_anchor = df_sbj_output_times.__anchor[ep_order]
+                ep_abs_time = df_sbj_output_times.__time_bin[ep_order]
+                ep_raw_time = df_sbj_output_times.__time[ep_order]
+
+                # for the sake of forward and backward imputation, expand current episode by twice the input ahead and twice the output after
+                # relative time sequence in an episode (relative to time 0)
+                rel_start = 2*int(-(input_time_len+time_lag)//time_resolution)
+                rel_stop = 2*int(np.ceil(output_time_len/time_resolution)) #(2 = (0,1))
+                # adjust expanded window to avoid overlapping with previous episode
+                rel_start = max(rel_start, int(np.ceil(output_time_len/time_resolution)) - int(anchor_gap//time_resolution))
+                rel_stop = min(rel_stop, int(anchor_gap//time_resolution)-int((input_time_len+time_lag)//time_resolution))
+                ep_rel_ts = list(range(rel_start, rel_stop))#0 included # episdoe relative time sequence
+                # absolute time sequence for current episode
+                abs_start = ep_abs_time + rel_start
+                abs_stop = ep_abs_time + rel_stop
+                ep_abs_ts = list(range(int(abs_start), int(abs_stop)))
+                assert len(ep_rel_ts) == len(ep_abs_ts), "Relative window length and absolute window length not match!"
+                # final window start and stop time index
+                abs_start_final = ep_abs_time - (input_time_len+time_lag)//time_resolution 
+                abs_stop_final = ep_abs_time + int(np.ceil(output_time_len/time_resolution))
+                ep_abs_ts_final = list(range(int(abs_start_final), int(abs_stop_final)))
+                # make abs ts a data frame for left merge
+                df_ts = pd.DataFrame({'__time_bin':ep_abs_ts})
+                # data frame for the time sequence of current episode from current subject
+                df_sbj_ep_ts_anchor = pd.merge(left=df_ts, right=df_sbj_ts, left_on='__time_bin', right_on='__time_bin', how='left', copy = False)
+                df_sbj_ep_ts_anchor = df_sbj_ep_ts_anchor.loc[:,['__anchor','__time_bin','__time']]
+                orders = list(variable_dict['__anchor']['factor']['levels'].keys())[::-1]
+                # find current highest level anchor
+                top_anchor = [o for o in orders if o in list(set(df_sbj_ep_ts_anchor.__anchor)&set(orders))][0]
+                # find the location of this anchor
+                top_time_bin = df_sbj_ep_ts_anchor.loc[df_sbj_ep_ts_anchor.__anchor==top_anchor,'__time_bin'].values[0]
+                top_time = df_sbj_ep_ts_anchor.loc[(df_sbj_ep_ts_anchor.__anchor==top_anchor)&(df_sbj_ep_ts_anchor.__time_bin==top_time_bin) ,'__time'].values[0]
+                # change current row in df_sbj_output_times
+                df_sbj_output_times.loc[ep_order, '__anchor'] = top_anchor
+                df_sbj_output_times.loc[ep_order, '__time_bin'] = top_time_bin
+                df_sbj_output_times.loc[ep_order, '__time'] = top_time
         
-        # get final not na anchors left
+
+        
+        # get not na anchors finally
         df_sbj_output_times = df_sbj_output_times[~df_sbj_output_times['__anchor'].isna()].reset_index(drop=True)
         
         for ep_order in list(df_sbj_output_times.index):
@@ -164,6 +214,10 @@ def make_episodes_ts(df_sbjs_ts, variable_dict, input_time_len, output_time_len,
                     else:
                         df_sbj_ep_ts[var] = df_sbj_ts.loc[df_sbj_ts[var].first_valid_index(), var]
 
+                # # test 
+                # if ep_order == 2 and var_dict=='y':
+                #     print("break here")
+                
                 # imputation / one-hot fulfill factor variables
                 if 'factor' in list(variable_dict[var_dict].keys()):
                     # reversed order, severity from high to low
@@ -173,7 +227,7 @@ def make_episodes_ts(df_sbjs_ts, variable_dict, input_time_len, output_time_len,
                     # level indicator tag for current episode
                     level_tags = [any(df_sbj_ep_ts[level_col]==1) for level_col in level_cols]
                     # find the correct highest true level for current episode
-                    top_col = list(np.array(level_cols)[np.array(level_tags)])[0]
+                    top_col = list(np.array(level_cols)[np.array(level_tags)])[0] # within current episode, multiple levels might be observed at different time, even the anchor indicates only one type of the level
                     other_cols = level_cols
                     other_cols.remove(top_col)
                     # assign 1 to the correct of current episode
