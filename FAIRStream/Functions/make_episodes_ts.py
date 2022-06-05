@@ -138,6 +138,7 @@ def make_episodes_ts(df_sbjs_ts, variable_dict, input_time_len, output_time_len,
         
         # get not na anchors finally
         df_sbj_output_times = df_sbj_output_times[~df_sbj_output_times['__anchor'].isna()].reset_index(drop=True)
+        df_sbj_output_times = df_sbj_output_times.drop_duplicates()
         
         for ep_order in list(df_sbj_output_times.index):
 

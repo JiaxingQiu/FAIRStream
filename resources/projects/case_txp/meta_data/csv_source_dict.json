@@ -1,0 +1,47 @@
+{
+    "uva": {
+        "vital": {
+            "include": false,
+            "path": "/Users/jiaxingqiu/Documents/BSI/code/DeepDiag/data/bsi_old_deidentified_final.csv",
+            "info": "Vital signs data from UVA"
+        },
+        "lab": {
+            "include": false,
+            "path": "/Users/jiaxingqiu/Documents/BSI/code/DeepDiag/data/uva_lab.csv",
+            "info": "Lab results data from UVA"
+        }
+    },
+    "uvaold":{
+        "all": {
+            "include": true,
+            "path": "/Users/jiaxingqiu/Documents/CAMA_projects/BSI/2011_2015/data_ml/bsi_old_final.csv",
+            "info": "Data from UVA 2011 - 2015 "
+        }
+    },
+    "uvanewbc": {
+        "all": {
+            "include": false,
+            "path": "/Users/jiaxingqiu/Documents/CAMA_projects/BSI/2016_2021/data_ml/bsi_new_deidentified_bc.csv",
+            "info": "Data from UVA 2017 - 2021 (cohort who have at least one blood culture )"
+        }
+    },
+    "uvanewnbc": {
+        "all": {
+            "include": false,
+            "path": "/Users/jiaxingqiu/Documents/CAMA_projects/BSI/2016_2021/data_ml/bsi_new_deidentified_nbc.csv",
+            "info": "Data from UVA 2017 - 2021 (cohort who have non blood culture)"
+        }
+    },
+    "mimic": {
+        "vital": {
+            "include": false,
+            "path": "/Users/jiaxingqiu/Documents/BSI/code/DeepDiag/data/mimic_patient_data_minutes.csv",
+            "info": "Vital signs data from MIMIC"
+        },
+        "lab": {
+            "include": false,
+            "path": "/Users/jiaxingqiu/Documents/BSI/code/DeepDiag/data/mimic_labs_minutes_combined.csv",
+            "info": "Lab results data from MIMIC"
+        }
+    }
+}
