@@ -75,7 +75,7 @@ def make_episodes_ts(df_sbjs_ts, variable_dict, input_time_len, output_time_len,
                 order=orders[0] # current top anchor
                 orders.pop(0)# left lower levels 
                 upper_anchors = df_sbj_output_times[df_sbj_output_times['__anchor']==order]
-                upper_anchors['__ep_order']=upper_anchors.__time_bin//(anchor_gap//time_resolution)
+                upper_anchors.loc[:,'__ep_order'] = upper_anchors.__time_bin//(anchor_gap//time_resolution)
                 upper_anchors = upper_anchors[np.array(upper_anchors.__ep_order.diff(1).isna())|np.array(upper_anchors.__ep_order.diff(1) >= 1)]
                 # nan invalid anchors
                 df_sbj_output_times.loc[np.array(df_sbj_output_times['__anchor']==order)&(np.array(~df_sbj_output_times['__time_bin'].isin(upper_anchors['__time_bin']) )), ['__anchor']]=np.nan
