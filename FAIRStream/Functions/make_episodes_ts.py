@@ -32,6 +32,8 @@ def make_episodes_ts(df_sbjs_ts, variable_dict, input_time_len, output_time_len,
     outvars=[]
     unique_vars=[]
     invars=[]
+    forward_lens=[]
+    backward_lens=[]
     for var in df_sbjs_ts.columns[~df_sbjs_ts.columns.isin(['__uid','__anchor','__time_bin','__time'])]:
         # get variable name in dictionary
         var_dict = var.split('___')[0]
@@ -44,11 +46,25 @@ def make_episodes_ts(df_sbjs_ts, variable_dict, input_time_len, output_time_len,
         # fill missingness caused by merging for unique value vars 
         if variable_dict[var_dict]['unique_per_sbj']:
             unique_vars.append(var)
+        # calculate maximum forward length request by dictionary
+        if 'numeric' in list(variable_dict[var_dict].keys()):
+            forward_lens.append(variable_dict[var_dict]['numeric']['impute_per_sbj']['forward'])
+            backward_lens.append(variable_dict[var_dict]['numeric']['impute_per_sbj']['backward'])
+    max_forward_len = 0
+    max_backward_len = 0
+    if len(forward_lens)>0: max_forward_len=np.nanmax(forward_lens)
+    if len(backward_lens)>0: max_backward_len=np.nanmax(backward_lens)
+    
+
+            
+
             
 
     # data frame to keep all episodes chunks from all subjects
     df_sbjs_eps_ts = pd.DataFrame() 
-    for uid in list(set(df_sbjs_ts['__uid'])):
+    uid_list = list(set(df_sbjs_ts['__uid']))
+    uid_list.sort()
+    for uid in uid_list:
         print("--- prepare episodes for "+str(uid))
 
         # get one subject's dataframe 
@@ -68,76 +84,135 @@ def make_episodes_ts(df_sbjs_ts, variable_dict, input_time_len, output_time_len,
         if 'factor' in variable_dict['__anchor'].keys():
             # locate anchors
             df_sbj_output_times = df_sbj_output_times.loc[df_sbj_output_times.__anchor.isin(list(variable_dict['__anchor']['factor']['levels'].keys())),['__anchor','__time_bin', '__time']].reset_index(drop = True)
-            
             # select anchors based on order of levels in dictionary (e.g. severity)
-            orders = list(variable_dict['__anchor']['factor']['levels'].keys())[::-1]# reversed order, severity from high to low
-            while len(orders)>0:
-                order=orders[0] # current top anchor
-                orders.pop(0)# left lower levels 
-                upper_anchors = df_sbj_output_times[df_sbj_output_times['__anchor']==order]
-                upper_anchors.loc[:,'__ep_order'] = upper_anchors.__time_bin//(anchor_gap//time_resolution)
-                upper_anchors = upper_anchors[np.array(upper_anchors.__ep_order.diff(1).isna())|np.array(upper_anchors.__ep_order.diff(1) >= 1)]
-                # nan invalid anchors
-                df_sbj_output_times.loc[np.array(df_sbj_output_times['__anchor']==order)&(np.array(~df_sbj_output_times['__time_bin'].isin(upper_anchors['__time_bin']) )), ['__anchor']]=np.nan
-
-                for idx in list(upper_anchors.index):
-                    override_zone_start = int(upper_anchors.loc[idx,['__time_bin']]-anchor_gap//time_resolution) 
-                    override_zone_stop = int(upper_anchors.loc[idx,['__time_bin']]+anchor_gap//time_resolution) 
-                    # nan invalid anchors
-                    df_sbj_output_times.loc[np.array(df_sbj_output_times['__time_bin']>override_zone_start)&(np.array(df_sbj_output_times['__time_bin']<override_zone_stop))&(np.array(df_sbj_output_times['__anchor'].isin(list(orders)))), ['__anchor']]=np.nan 
+            orders = list(variable_dict['__anchor']['factor']['levels'].keys())
             
-            # get not na anchors
-            df_sbj_output_times = df_sbj_output_times[~df_sbj_output_times['__anchor'].isna()].reset_index(drop=True)
+            df_anchor = df_sbj_output_times
+            # if current subject has more than 1 level of anchor
+            if len(list(set(orders)&set(df_anchor.__anchor)))>1:
+                # loop through second lowest level anchor to highest level anchor
+                for i in list(range(1,len(orders))):
+                    df_l = df_anchor.loc[df_anchor['__anchor'].isin(orders[:(i+1)])] # lower level anchors
+                    df_u = df_anchor.loc[df_anchor['__anchor'].isin(orders[(i+1):])] # upper level anchors
+                    df_o = df_anchor.loc[df_anchor['__anchor']==orders[i]] # current level anchor
+                    df_o['__ep_order'] = list(df_o.__time_bin//(anchor_gap//time_resolution))
+                    df_o = df_o.loc[np.array(df_o.__ep_order.diff(1).isna())|np.array(df_o.__ep_order.diff(1)>=1),['__anchor','__time_bin','__time']]
+                    # filter lower rank anchors that fall nearby df_o.__time_bin
+                    for t in list(df_o.__time_bin): 
+                        df_l = df_l.loc[(df_l.__time_bin<=t)|(df_l.__time_bin>(t+anchor_gap//time_resolution)),:]
+                    # add upper level anchors back on
+                    df_anchor = pd.concat([df_l, df_u],axis=0)
+                 
+                # clean up lowest level
+                # remove lowest level that fall in (input_time_len + time_lag)//time_resolution 
+                df_u = df_anchor.loc[df_anchor['__anchor'].isin(orders[1:])]
+                for t in list(df_u.__time_bin): 
+                    df_anchor.loc[(df_anchor.__time_bin>=(t-(input_time_len + time_lag)//time_resolution))&(df_l.__time_bin<t)&(df_anchor['__anchor']==orders[0]),'__anchor'] = np.nan
+                df_anchor = df_anchor[~df_anchor['__anchor'].isna()].sort_values(by=['__time_bin']).reset_index(drop=True)
+                
+            df_anchor_cntrl = df_anchor.loc[df_anchor['__anchor']==orders[0],:].reset_index(drop=True) #baseline 
+            df_anchor_event = df_anchor.loc[~np.array(df_anchor['__anchor']==orders[0]),:] #other anchors 
             
-            # adjust anchors who have higher levels of anchor(s) within their episode range
-            for ep_order in list(df_sbj_output_times.index):
-                # check maximum limits of episodes from a single subject
-                if topn_eps is not None and int(topn_eps)>0:
-                    if ep_order+1 >= int(topn_eps):
-                        break # break inner loop
+            # find the event anchor and their nearby time points within final episode
+            df_sbj_ts_event = df_sbj_ts.loc[df_sbj_ts.__time_bin<=np.max(df_anchor_event.__time_bin)+anchor_gap//time_resolution,:]
+            
+            # find valid control group baseline time points
+            df_sbj_ts_cntrl = df_sbj_ts.loc[df_sbj_ts.__time_bin.isin(df_anchor_cntrl.__time_bin),:]
+            df_sbj_ts_cntrl['__time_bin_org'] = list(df_sbj_ts_cntrl['__time_bin'])
+            df_sbj_ts_cntrl['__time_bin'] = list(range(1,df_sbj_ts_cntrl.shape[0]+1))
+            if df_sbj_ts_event.shape[0]>0:
+                df_sbj_ts_cntrl['__time_bin'] = df_sbj_ts_cntrl['__time_bin'] + np.max(df_sbj_ts_event.__time_bin)
+            # use every first time bin as control group anchors
+            df_sbj_ts_cntrl['__ep_order'] = list((df_sbj_ts_cntrl.__time_bin-np.min(df_sbj_ts_cntrl.__time_bin))//(anchor_gap//time_resolution))
+            df_anchor_cntrl = df_sbj_ts_cntrl.loc[np.array(df_sbj_ts_cntrl.__ep_order.diff(1).isna()) | np.array(df_sbj_ts_cntrl.__ep_order.diff(1)>=1),['__anchor','__time_bin','__time']]
+            # shift input length
+            df_anchor_cntrl['__time_bin'] = df_anchor_cntrl['__time_bin'] + (input_time_len + time_lag)//time_resolution
+            # combine final anchors
+            df_anchor = pd.concat([df_anchor_event, df_anchor_cntrl], axis=0)
+            df_anchor = df_anchor.reset_index(drop=True)
+            if df_anchor.shape[0]<1:
+                print("Error ----  no valid anchor found!")
+                continue
 
-                # current anchor and absolute time bin value
-                ep_anchor = df_sbj_output_times.__anchor[ep_order]
-                ep_abs_time = df_sbj_output_times.__time_bin[ep_order]
-                ep_raw_time = df_sbj_output_times.__time[ep_order]
+            # combine fianl subject ts df
+            df_sbj_ts_cntrl = df_sbj_ts_cntrl.loc[:,list(set(df_sbj_ts_cntrl.columns)&set(df_sbj_ts_event.columns))]
+            df_sbj_ts = pd.concat([df_sbj_ts_event, df_sbj_ts_cntrl], axis=0)
+            df_sbj_ts = df_sbj_ts.reset_index(drop=True)
+                
+                
+                
 
-                # for the sake of forward and backward imputation, expand current episode by twice the input ahead and twice the output after
-                # relative time sequence in an episode (relative to time 0)
-                rel_start = 2*int(-(input_time_len+time_lag)//time_resolution)
-                rel_stop = 2*int(np.ceil(output_time_len/time_resolution)) #(2 = (0,1))
-                # adjust expanded window to avoid overlapping with previous episode
-                rel_start = max(rel_start, int(np.ceil(output_time_len/time_resolution)) - int(anchor_gap//time_resolution))
-                rel_stop = min(rel_stop, int(anchor_gap//time_resolution)-int((input_time_len+time_lag)//time_resolution))
-                ep_rel_ts = list(range(rel_start, rel_stop))#0 included # episdoe relative time sequence
-                # absolute time sequence for current episode
-                abs_start = ep_abs_time + rel_start
-                abs_stop = ep_abs_time + rel_stop
-                ep_abs_ts = list(range(int(abs_start), int(abs_stop)))
-                assert len(ep_rel_ts) == len(ep_abs_ts), "Relative window length and absolute window length not match!"
-                # final window start and stop time index
-                abs_start_final = ep_abs_time - (input_time_len+time_lag)//time_resolution 
-                abs_stop_final = ep_abs_time + int(np.ceil(output_time_len/time_resolution))
-                ep_abs_ts_final = list(range(int(abs_start_final), int(abs_stop_final)))
-                # make abs ts a data frame for left merge
-                df_ts = pd.DataFrame({'__time_bin':ep_abs_ts})
-                # data frame for the time sequence of current episode from current subject
-                df_sbj_ep_ts_anchor = pd.merge(left=df_ts, right=df_sbj_ts, left_on='__time_bin', right_on='__time_bin', how='left', copy = False)
-                df_sbj_ep_ts_anchor = df_sbj_ep_ts_anchor.loc[:,['__anchor','__time_bin','__time']]
-                orders = list(variable_dict['__anchor']['factor']['levels'].keys())[::-1]
-                # find current highest level anchor
-                top_anchor = [o for o in orders if o in list(set(df_sbj_ep_ts_anchor.__anchor)&set(orders))][0]
-                # find the location of this anchor
-                top_time_bin = df_sbj_ep_ts_anchor.loc[df_sbj_ep_ts_anchor.__anchor==top_anchor,'__time_bin'].values[0]
-                top_time = df_sbj_ep_ts_anchor.loc[(df_sbj_ep_ts_anchor.__anchor==top_anchor)&(df_sbj_ep_ts_anchor.__time_bin==top_time_bin) ,'__time'].values[0]
-                # change current row in df_sbj_output_times
-                df_sbj_output_times.loc[ep_order, '__anchor'] = top_anchor
-                df_sbj_output_times.loc[ep_order, '__time_bin'] = top_time_bin
-                df_sbj_output_times.loc[ep_order, '__time'] = top_time
-        
 
+
+
+
+            # # select anchors based on order of levels in dictionary (e.g. severity)
+            # orders = list(variable_dict['__anchor']['factor']['levels'].keys())[::-1]# reversed order, severity from high to low
+            # while len(orders)>0:
+            #     order=orders[0] # current top anchor
+            #     orders.pop(0)# left lower levels 
+            #     upper_anchors = df_sbj_output_times[df_sbj_output_times['__anchor']==order]
+            #     upper_anchors.loc[:,'__ep_order'] = upper_anchors.__time_bin//(anchor_gap//time_resolution)
+            #     upper_anchors = upper_anchors[np.array(upper_anchors.__ep_order.diff(1).isna())|np.array(upper_anchors.__ep_order.diff(1) >= 1)]
+            #     # nan invalid anchors
+            #     df_sbj_output_times.loc[np.array(df_sbj_output_times['__anchor']==order)&(np.array(~df_sbj_output_times['__time_bin'].isin(upper_anchors['__time_bin']) )), ['__anchor']]=np.nan
+
+            #     for idx in list(upper_anchors.index):
+            #         override_zone_start = int(upper_anchors.loc[idx,['__time_bin']]-anchor_gap//time_resolution) 
+            #         override_zone_stop = int(upper_anchors.loc[idx,['__time_bin']]+anchor_gap//time_resolution) 
+            #         # nan invalid anchors
+            #         df_sbj_output_times.loc[np.array(df_sbj_output_times['__time_bin']>override_zone_start)&(np.array(df_sbj_output_times['__time_bin']<override_zone_stop))&(np.array(df_sbj_output_times['__anchor'].isin(list(orders)))), ['__anchor']]=np.nan 
+            
+            # # get not na anchors
+            # df_sbj_output_times = df_sbj_output_times[~df_sbj_output_times['__anchor'].isna()].reset_index(drop=True)
+            
+            # # adjust anchors who have higher levels of anchor(s) within their episode range
+            # for ep_order in list(df_sbj_output_times.index):
+            #     # check maximum limits of episodes from a single subject
+            #     if topn_eps is not None and int(topn_eps)>0:
+            #         if ep_order+1 >= int(topn_eps):
+            #             break # break inner loop
+
+            #     # current anchor and absolute time bin value
+            #     ep_anchor = df_sbj_output_times.__anchor[ep_order]
+            #     ep_abs_time = df_sbj_output_times.__time_bin[ep_order]
+            #     ep_raw_time = df_sbj_output_times.__time[ep_order]
+
+            #     # for the sake of forward and backward imputation, expand current episode by twice the input ahead and twice the output after
+            #     # relative time sequence in an episode (relative to time 0)
+            #     rel_start = 2*int(-(input_time_len+time_lag)//time_resolution)
+            #     rel_stop = 2*int(np.ceil(output_time_len/time_resolution)) #(2 = (0,1))
+            #     # adjust expanded window to avoid overlapping with previous episode
+            #     rel_start = max(rel_start, int(np.ceil(output_time_len/time_resolution)) - int(anchor_gap//time_resolution))
+            #     rel_stop = min(rel_stop, int(anchor_gap//time_resolution)-int((input_time_len+time_lag)//time_resolution))
+            #     ep_rel_ts = list(range(rel_start, rel_stop))#0 included # episdoe relative time sequence
+            #     # absolute time sequence for current episode
+            #     abs_start = ep_abs_time + rel_start
+            #     abs_stop = ep_abs_time + rel_stop
+            #     ep_abs_ts = list(range(int(abs_start), int(abs_stop)))
+            #     assert len(ep_rel_ts) == len(ep_abs_ts), "Relative window length and absolute window length not match!"
+            #     # final window start and stop time index
+            #     abs_start_final = ep_abs_time - (input_time_len+time_lag)//time_resolution 
+            #     abs_stop_final = ep_abs_time + int(np.ceil(output_time_len/time_resolution))
+            #     ep_abs_ts_final = list(range(int(abs_start_final), int(abs_stop_final)))
+            #     # make abs ts a data frame for left merge
+            #     df_ts = pd.DataFrame({'__time_bin':ep_abs_ts})
+            #     # data frame for the time sequence of current episode from current subject
+            #     df_sbj_ep_ts_anchor = pd.merge(left=df_ts, right=df_sbj_ts, left_on='__time_bin', right_on='__time_bin', how='left', copy = False)
+            #     df_sbj_ep_ts_anchor = df_sbj_ep_ts_anchor.loc[:,['__anchor','__time_bin','__time']]
+            #     orders = list(variable_dict['__anchor']['factor']['levels'].keys())[::-1]
+            #     # find current highest level anchor
+            #     top_anchor = [o for o in orders if o in list(set(df_sbj_ep_ts_anchor.__anchor)&set(orders))][0]
+            #     # find the location of this anchor
+            #     top_time_bin = df_sbj_ep_ts_anchor.loc[df_sbj_ep_ts_anchor.__anchor==top_anchor,'__time_bin'].values[0]
+            #     top_time = df_sbj_ep_ts_anchor.loc[(df_sbj_ep_ts_anchor.__anchor==top_anchor)&(df_sbj_ep_ts_anchor.__time_bin==top_time_bin) ,'__time'].values[0]
+            #     # change current row in df_sbj_output_times
+            #     df_sbj_output_times.loc[ep_order, '__anchor'] = top_anchor
+            #     df_sbj_output_times.loc[ep_order, '__time_bin'] = top_time_bin
+            #     df_sbj_output_times.loc[ep_order, '__time'] = top_time
         
         # get not na anchors finally
-        df_sbj_output_times = df_sbj_output_times[~df_sbj_output_times['__anchor'].isna()].reset_index(drop=True)
+        df_sbj_output_times = df_anchor[~df_anchor['__anchor'].isna()].reset_index(drop=True)
         df_sbj_output_times = df_sbj_output_times.drop_duplicates()
         
         for ep_order in list(df_sbj_output_times.index):
@@ -152,14 +227,18 @@ def make_episodes_ts(df_sbjs_ts, variable_dict, input_time_len, output_time_len,
             ep_abs_time = df_sbj_output_times.__time_bin[ep_order]
             ep_raw_time = df_sbj_output_times.__time[ep_order]
 
-            # for the sake of forward and backward imputation, expand current episode by twice the input ahead and twice the output after
+            # for the sake of forward and backward imputation, 
+            # expand current episode by adding largest forward length before and largest backward length after
             # relative time sequence in an episode (relative to time 0)
-            rel_start = 2*int(-(input_time_len+time_lag)//time_resolution)
-            rel_stop = 2*int(np.ceil(output_time_len/time_resolution)) #(2 = (0,1))
-            # adjust expanded window to avoid overlapping with previous episode
-            rel_start = max(rel_start, int(np.ceil(output_time_len/time_resolution)) - int(anchor_gap//time_resolution))
-            rel_stop = min(rel_stop, int(anchor_gap//time_resolution)-int((input_time_len+time_lag)//time_resolution))
-            ep_rel_ts = list(range(rel_start, rel_stop))#0 included # episdoe relative time sequence
+            rel_start = int(-(input_time_len+time_lag)//time_resolution)
+            rel_stop = int(np.ceil(output_time_len/time_resolution)) #(2 = (0,1))
+            rel_start = int(rel_start - max_forward_len//time_resolution)
+            rel_stop = int(rel_stop + max_backward_len//time_resolution)
+            
+            # # adjust expanded window to avoid overlapping with previous episode
+            # rel_start = max(rel_start, int(np.ceil(output_time_len/time_resolution)) - int(anchor_gap//time_resolution))
+            # rel_stop = min(rel_stop, int(anchor_gap//time_resolution)-int((input_time_len+time_lag)//time_resolution))
+            ep_rel_ts = list(range(rel_start, rel_stop))# 0 included # episdoe relative time sequence
             
             # absolute time sequence for current episode
             abs_start = ep_abs_time + rel_start
@@ -280,6 +359,7 @@ def make_episodes_ts(df_sbjs_ts, variable_dict, input_time_len, output_time_len,
 
     #remove __time_bin column
     df_sbjs_eps_ts = df_sbjs_eps_ts.loc[:, df_sbjs_eps_ts.columns != '__time_bin']
+
     
     # shuffle anchor level per episode if required
     level2shuffle = list(variable_dict['__anchor']['shuffle'])
