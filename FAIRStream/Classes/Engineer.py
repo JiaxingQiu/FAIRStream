@@ -254,11 +254,19 @@ class Engineer(Goblin):
         Y_valid=None
         X_test=None
         Y_test=None
-        
         X_train, Y_train = extract_xy(self.train_tfds, shape_type)
         X_valid, Y_valid = extract_xy(self.valid_tfds, shape_type)
         X_test, Y_test = extract_xy(self.test_tfds, shape_type)
-        
         return X_train, Y_train, X_valid, Y_valid, X_test, Y_test
 
-
+    def DF2TFDS(self, newdf, batch_size):
+        if self.episode is None:
+            return "Please define episode by calling DefineEpisode function first!"
+        if self.input_vars is None:
+            return "Please specify input(explanatory) variables by assigning variable name list to input_var attribute!"
+        if self.output_vars is None:
+            return "Please specify output (response) variables by assigning variable name list to output_var attribute!"
+        if newdf.shape[0]>0:
+            newtfds = make_mvts_tfds_from_df(newdf, input_vars=self.input_vars, output_vars=self.output_vars, input_time_len=self.episode.input_time_len, output_time_len=self.episode.output_time_len, time_resolution=self.episode.time_resolution, time_lag=self.episode.time_lag, batch_size=batch_size)
+        return newtfds
+            
